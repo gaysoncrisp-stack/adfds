@@ -4928,9 +4928,11 @@ static void StartFramePump()
     });
 }
 
+static Il2CppClass* AuthenticationValues = nullptr;
+static Il2CppClass* PhotonNetwork = nullptr;
+
 void initStuff(MemoryFileInfo framework)
 {
-    // --- Load IL2CPP functions we actually need ---
     auto domain_get     = (Il2CppDomain*(*)())KittyScanner::findSymbol(framework, "_il2cpp_domain_get");
     auto get_assemblies = (Il2CppAssembly**(*)(const Il2CppDomain*, size_t*))KittyScanner::findSymbol(framework, "_il2cpp_domain_get_assemblies");
     auto get_image      = (Il2CppImage*(*)(const Il2CppAssembly*))KittyScanner::findSymbol(framework, "_il2cpp_assembly_get_image");
@@ -4938,97 +4940,75 @@ void initStuff(MemoryFileInfo framework)
     auto get_class      = (Il2CppClass*(*)(const Il2CppImage*, size_t))KittyScanner::findSymbol(framework, "_il2cpp_image_get_class");
 
     s_get_method_from_name = (MethodInfo*(*)(Il2CppClass*, const char*, int))KittyScanner::findSymbol(framework, "_il2cpp_class_get_method_from_name");
-    s_object_get_class     = (Il2CppClass*(*)(Il2CppObject*))KittyScanner::findSymbol(framework, "_il2cpp_object_get_class");
+    string_length     = (int32_t(*)(Il2CppString*))KittyScanner::findSymbol(framework, "_il2cpp_string_length");
+    string_chars      = (Il2CppChar*(*)(Il2CppString*))KittyScanner::findSymbol(framework, "_il2cpp_string_chars");
+    s_type_get_object      = (Il2CppObject*(*)(const Il2CppType*))KittyScanner::findSymbol(framework, "_il2cpp_type_get_object");
+    s_string_new           = (Il2CppString*(*)(const char*))KittyScanner::findSymbol(framework, "_il2cpp_string_new");
+    auto thread_attach     = (void*(*)(Il2CppDomain*))KittyScanner::findSymbol(framework, "_il2cpp_thread_attach");
+    s_runtime_invoke       = (Il2CppObject*(*)(const MethodInfo*, void*, void**, Il2CppException**))KittyScanner::findSymbol(framework, "_il2cpp_runtime_invoke");
+
     s_class_get_field_from_name = (FieldInfo*(*)(Il2CppClass*, const char*))KittyScanner::findSymbol(framework, "_il2cpp_class_get_field_from_name");
-    s_field_get_value      = (void(*)(Il2CppObject*, FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_get_value");
-    string_chars           = (Il2CppChar*(*)(Il2CppString*))KittyScanner::findSymbol(framework, "_il2cpp_string_chars");
-    string_length          = (int32_t(*)(Il2CppString*))KittyScanner::findSymbol(framework, "_il2cpp_string_length");
+    s_object_get_class          = (Il2CppClass*(*)(Il2CppObject*))KittyScanner::findSymbol(framework, "_il2cpp_object_get_class");
+    s_field_get_value           = (void(*)(Il2CppObject*, FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_get_value");
+    s_field_set_value           = (void(*)(Il2CppObject*, FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_set_value");
+    s_field_static_get_value = (void(*)(FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_static_get_value");
+    s_class_get_methods   = (t_class_get_methods)  KittyScanner::findSymbol(framework, "_il2cpp_class_get_methods");
+    s_class_get_namespace = (t_class_get_namespace)KittyScanner::findSymbol(framework, "_il2cpp_class_get_namespace");
+    s_class_get_name      = (t_class_get_name)     KittyScanner::findSymbol(framework, "_il2cpp_class_get_name");
+    s_type_get_name       = (t_type_get_name)      KittyScanner::findSymbol(framework, "_il2cpp_type_get_name");
 
-    // --- Build class map (required to find Photon classes) ---
+
+    if (!s_object_unbox) s_object_unbox = (void*(*)(Il2CppObject*))KittyScanner::findSymbol(framework, "_il2cpp_object_unbox");
+    if (!s_value_box)          s_value_box          = (Il2CppObject*(*)(Il2CppClass*,void*))KittyScanner::findSymbol(framework, "_il2cpp_value_box");
+    if (!s_get_class_from_name) s_get_class_from_name = (Il2CppClass*(*)(const char*,const char*))KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
+        
     auto domain = domain_get();
-    size_t asmCount = 0;
-    auto assemblies = get_assemblies(domain, &asmCount);
+    if (thread_attach && domain) thread_attach(domain);
 
-    for (size_t i = 0; i < asmCount; i++) {
-        auto img = get_image(assemblies[i]);
-        if (!img) continue;
+    size_t size = 0;
+    auto assemblies = get_assemblies(domain, &size);
 
-        size_t cc = get_class_count(img);
-        for (size_t k = 0; k < cc; k++) {
-            Il2CppClass* klass = get_class(img, k);
+    int okRealClasses = 0;
+    for (int i = 0; i < (int)size; ++i) 
+    {
+        auto assembly = assemblies[i];
+        auto image = get_image(assembly);
+        if (!image) continue;
+        imageMap[std::string(image->name)] = image;
+        size_t cc = get_class_count(image);
+        for (size_t k = 0; k < cc; ++k) {
+            Il2CppClass* klass = get_class(image, k);
             if (!klass) continue;
-            classMap[klass->namespaze][klass->name] = klass;
+            classMap[std::string(klass->namespaze)][std::string(klass->name)] = klass;
+            okRealClasses++;
         }
     }
+    KITTY_LOGI("Initialized %d total namespaces with %d total classes  ", okRealClasses, (int)classMap.size());
 
-    // --- Resolve Photon classes ---
-    Il2CppClass* PhotonNetwork = classMap["Photon.Pun"]["PhotonNetwork"];
-    Il2CppClass* AuthenticationValues = classMap["Photon.Realtime"]["AuthenticationValues"];
+    AuthenticationValues           = classMap["Photon.Realtime"]["AuthenticationValues"];
+    PhotonNetwork            = classMap["Photon.Pun"]["PhotonNetwork"];
+
+
 
     if (!PhotonNetwork || !AuthenticationValues) {
-        NSLog(@"[AUTH] Missing Photon classes");
+        NSLog(@"[Kitty] Missing Photon classes");
         return;
     }
 
-    // --- Resolve PhotonNetwork.get_AuthValues ---
-    MethodInfo* m_getAuth = s_get_method_from_name(PhotonNetwork, "get_AuthValues", 0);
-    if (!m_getAuth || !m_getAuth->methodPointer) {
-        NSLog(@"[AUTH] get_AuthValues not found");
-        return;
-    }
+    auto m_get_AuthValues = s_get_method_from_name(PhotonNetwork, "get_AuthValues", 0);
+    auto get_AuthValues = (Il2CppObject*(*)())STRIP_FP(m_get_AuthValues->methodPointer);
 
-    using t_getAuth = Il2CppObject* (*)();
-    t_getAuth getAuth = (t_getAuth)STRIP_FP(m_getAuth->methodPointer);
+    auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
 
-    // --- Poll until AuthValues is non-null ---
-    Il2CppObject* av = nullptr;
-    while (!av) {
-        av = getAuth();
-        if (!av) {
-            NSLog(@"[AUTH] AuthValues null, waiting…");
-            sleep(1);
-        }
-    }
+    Il2CppException* ex = nullptr;
+    auto sObj = (Il2CppString*)s_runtime_invoke(m_toString, get_AuthValues, nullptr, &ex);
+    if (ex) { NSLog(@"[Kitty] ToString threw exception"); return; }
+    if (!sObj) { NSLog(@"[Kitty] ToString returned null string"); return; }
+    NSLog(@"[Kitty] ToString invoked OK");
 
-    NSLog(@"[AUTH] AuthValues object acquired: %p", av);
+    std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
+    NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
 
-    // --- Extract fields ---
-    auto readStringField = [&](const char* name) -> std::string {
-        Il2CppString* s = nullptr;
-        FieldInfo* f = s_class_get_field_from_name(AuthenticationValues, name);
-        if (!f) return {};
-        s_field_get_value(av, f, &s);
-        return il2cpp_string_to_std(s, string_chars, string_length);
-    };
-
-    auto readObjectField = [&](const char* name) -> Il2CppObject* {
-        Il2CppObject* o = nullptr;
-        FieldInfo* f = s_class_get_field_from_name(AuthenticationValues, name);
-        if (!f) return nullptr;
-        s_field_get_value(av, f, &o);
-        return o;
-    };
-
-    int authType = 0;
-    {
-        FieldInfo* f = s_class_get_field_from_name(AuthenticationValues, "authType");
-        if (f) s_field_get_value(av, f, &authType);
-    }
-
-    std::string userId   = readStringField("<UserId>k__BackingField");
-    std::string getParms = readStringField("<AuthGetParameters>k__BackingField");
-
-    Il2CppObject* postData = readObjectField("<AuthPostData>k__BackingField");
-    Il2CppObject* token    = readObjectField("<Token>k__BackingField");
-
-    // --- Log everything ---
-    NSLog(@"[AUTH] -----------------------------");
-    NSLog(@"[AUTH] AuthType: %d", authType);
-    NSLog(@"[AUTH] UserId: %s", userId.c_str());
-    NSLog(@"[AUTH] AuthGetParameters: %s", getParms.c_str());
-    NSLog(@"[AUTH] AuthPostData: %p", postData);
-    NSLog(@"[AUTH] Token: %p", token);
-    NSLog(@"[AUTH] -----------------------------");
 }
 
 
