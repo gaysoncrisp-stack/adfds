@@ -5168,6 +5168,10 @@ void initStuff(MemoryFileInfo framework)
         sleep(1);
     }
 
+    using t_get_string = Il2CppString* (*)(Il2CppObject*);
+    using t_get_object = Il2CppObject* (*)(Il2CppObject*);
+    using t_get_i32    = int32_t (*)(Il2CppObject*);
+
     auto toUtf8 = [&](Il2CppString* s)->std::string {
         return il2cpp_string_to_std(s, string_chars, string_length);
     };
@@ -5215,11 +5219,11 @@ void initStuff(MemoryFileInfo framework)
     const std::string postStr = objToString(oPost);
     const std::string tokStr  = objToString(oToken);
 
-    NSLog(@"[Kitty] Auth Values | AuthGetParameters : %s", params.c_str());
-    NSLog(@"[Kitty] Auth Values | UserId            : %s", userId.c_str());
-    NSLog(@"[Kitty] Auth Values | AuthPostData      : %s", postStr.c_str());
-    NSLog(@"[Kitty] Auth Values | Token             : %s", tokStr.c_str());
-    NSLog(@"[Kitty] Auth Values | AuthType          : %d", (int)eType);
+    KITTY_LOGI(@"[Kitty] Auth Values | AuthGetParameters : %{public}s", params.c_str());
+    KITTY_LOGI(@"[Kitty] Auth Values | UserId            : %{public}s", userId.c_str());
+    KITTY_LOGI(@"[Kitty] Auth Values | AuthPostData      : %{public}s", postStr.c_str());
+    KITTY_LOGI(@"[Kitty] Auth Values | Token             : %{public}s", tokStr.c_str());
+    KITTY_LOGI(@"[Kitty] Auth Values | AuthType          : %{public}d", (int)eType);
 
     Il2CppString* sObj = (Il2CppString*)strObj;
 
