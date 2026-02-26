@@ -4928,68 +4928,6 @@ static void StartFramePump()
     });
 }
 
-static std::string il2cpp_obj_to_string(Il2CppObject* obj)
-{
-    if (!obj)
-        return "<null>";
-
-    Il2CppClass* klass = obj->klass;
-    const char* name = klass->name;
-
-    // If it's already a string
-    if (strcmp(name, "String") == 0)
-    {
-        Il2CppString* s = (Il2CppString*)obj;
-        if (!s || s->length <= 0)
-            return "";
-        return il2cpp_string_to_std(s, string_chars, string_length);
-    }
-
-    // If it's a byte[]
-    if (strcmp(name, "Byte[]") == 0)
-    {
-        auto arr = (Il2CppArray*)obj;
-        int len = arr->max_length;
-        std::string out = "<byte[" + std::to_string(len) + "]> ";
-        for (int i = 0; i < len; i++)
-        {
-            uint8_t b = ((uint8_t*)arr->vector)[i];
-            char buf[8];
-            snprintf(buf, sizeof(buf), "%02X ", b);
-            out += buf;
-        }
-        return out;
-    }
-
-    // If it's a boxed primitive
-    if (klass->valuetype)
-    {
-        // Try ToString()
-        MethodInfo* toStr = il2cpp_class_get_method_from_name(klass, "ToString", 0);
-        if (toStr)
-        {
-            Il2CppException* ex = nullptr;
-            Il2CppObject* strObj = s_runtime_invoke(toStr, obj, nullptr, &ex);
-            if (!ex && strObj)
-                return il2cpp_obj_to_string(strObj);
-        }
-        return "<boxed value>";
-    }
-
-    // Fallback: call ToString() on any object
-    MethodInfo* toStr = il2cpp_class_get_method_from_name(klass, "ToString", 0);
-    if (toStr)
-    {
-        Il2CppException* ex = nullptr;
-        Il2CppObject* strObj = s_runtime_invoke(toStr, obj, nullptr, &ex);
-        if (!ex && strObj)
-            return il2cpp_obj_to_string(strObj);
-    }
-
-    return std::string("<object ") + name + ">";
-}
-
-
 static Il2CppClass* PhotonNetwork = nullptr;
 
 void initStuff(MemoryFileInfo framework)
@@ -5147,6 +5085,11 @@ void initStuff(MemoryFileInfo framework)
     }
 
     auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
+    auto m_get_AuthGetParameters = s_get_method_from_name(AuthenticationValues, "get_AuthGetParameters", 0);
+    auto m_get_AuthPostData = s_get_method_from_name(AuthenticationValues, "get_AuthPostData", 0);
+    auto m_get_AuthType = s_get_method_from_name(AuthenticationValues, "get_AuthType", 0);
+    auto m_get_Token = s_get_method_from_name(AuthenticationValues, "get_Token", 0);
+    auto m_get_UserId = s_get_method_from_name(AuthenticationValues, "get_UserId", 0);
 
     Il2CppObject* authObj = nullptr;
 
@@ -5168,62 +5111,9 @@ void initStuff(MemoryFileInfo framework)
         sleep(1);
     }
 
-    using t_get_string = Il2CppString* (*)(Il2CppObject*);
-    using t_get_object = Il2CppObject* (*)(Il2CppObject*);
-    using t_get_i32    = int32_t (*)(Il2CppObject*);
-
-    auto toUtf8 = [&](Il2CppString* s)->std::string {
-        return il2cpp_string_to_std(s, string_chars, string_length);
-    };
-    auto objToString = [&](Il2CppObject* o)->std::string {
-        if (!o) return {};
-        Il2CppClass* k = s_object_get_class(o);
-        auto m = s_get_method_from_name(k, "ToString", 0);
-        if (!m || !m->methodPointer) return {};
-        Il2CppException* ex = nullptr;
-        auto str = (Il2CppString*)s_runtime_invoke(m, o, nullptr, &ex);
-        return ex ? std::string() : toUtf8(str);
-    };
-
 
     Il2CppException* ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
-
-    auto m_GetParams = s_get_method_from_name(AuthenticationValues, "get_AuthGetParameters", 0);
-    auto m_UserId    = s_get_method_from_name(AuthenticationValues, "get_UserId",            0);
-    auto m_PostData  = s_get_method_from_name(AuthenticationValues, "get_AuthPostData",      0);
-    auto m_Token     = s_get_method_from_name(AuthenticationValues, "get_Token",             0);
-    auto m_AuthType  = s_get_method_from_name(AuthenticationValues, "get_AuthType",          0);
-    if (!m_GetParams || !m_GetParams->methodPointer ||
-        !m_UserId    || !m_UserId->methodPointer    ||
-        !m_PostData  || !m_PostData->methodPointer  ||
-        !m_Token     || !m_Token->methodPointer     ||
-        !m_AuthType  || !m_AuthType->methodPointer) {
-        return;
-    }
-
-    auto gp = (t_get_string)STRIP_FP(m_GetParams->methodPointer);
-    auto ui = (t_get_string)STRIP_FP(m_UserId->methodPointer);
-    auto pd = (t_get_object)STRIP_FP(m_PostData->methodPointer);
-    auto tk = (t_get_object)STRIP_FP(m_Token->methodPointer);
-    auto at = (t_get_i32   )STRIP_FP(m_AuthType->methodPointer);
-
-    Il2CppString* sParams = gp(authObj);
-    Il2CppString* sUserId = ui(authObj);
-    Il2CppObject* oPost   = pd(authObj);
-    Il2CppObject* oToken  = tk(authObj);
-    int32_t       eType   = at(authObj);
-
-    const std::string params  = toUtf8(sParams);
-    const std::string userId  = toUtf8(sUserId);
-    const std::string postStr = objToString(oPost);
-    const std::string tokStr  = objToString(oToken);
-
-    KITTY_LOGI(@"[Kitty] Auth Values | AuthGetParameters : %{public}s", params.c_str());
-    KITTY_LOGI(@"[Kitty] Auth Values | UserId            : %{public}s", userId.c_str());
-    KITTY_LOGI(@"[Kitty] Auth Values | AuthPostData      : %{public}s", postStr.c_str());
-    KITTY_LOGI(@"[Kitty] Auth Values | Token             : %{public}s", tokStr.c_str());
-    KITTY_LOGI(@"[Kitty] Auth Values | AuthType          : %{public}d", (int)eType);
 
     Il2CppString* sObj = (Il2CppString*)strObj;
 
