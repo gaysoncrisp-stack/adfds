@@ -5087,7 +5087,7 @@ void initStuff(MemoryFileInfo framework)
     auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
     if (!m_toString)
     {
-        NSLog(@"[Kitty] AuthenticationValues.ToString not found");
+        NSLog(@"[Kitty] AuthenticationValues.ToString not");
         return;
     }
 
