@@ -5084,7 +5084,7 @@ void initStuff(MemoryFileInfo framework)
         return;
     }
 
-    auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
+    auto m_toString = s_get_method_from_name(AuthenticationValues, "get_AuthGetParameters", 0);
     if (!m_toString)
     {
         NSLog(@"[Kitty] AuthenticationValues.ToString not");
@@ -5115,20 +5115,11 @@ void initStuff(MemoryFileInfo framework)
     Il2CppException* ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
 
-    Il2CppClass* klass = il2cpp_object_get_class(strObj);
-    const char* name = il2cpp_class_get_name(klass);
-    NSLog(@"[Kitty] ToString() returned type: %s", name);
-
     Il2CppString* sObj = (Il2CppString*)strObj;
-
-    if (!sObj || !sObj->chars || sObj->length <= 0)
-    {
-        NSLog(@"[Kitty] ToString returned empty or invalid string");
-        return;
-    }
-
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
-    NSLog(@"[Kitty] AuthValues.ToString => %{public}s", s.c_str());
+
+    NSLog(@"[Kitty] AuthValues.ToString => %{public}@", s.c_str());
+    NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
 }
 
 
