@@ -5084,7 +5084,7 @@ void initStuff(MemoryFileInfo framework)
         return;
     }
 
-    auto m_toString = s_get_method_from_name(AuthenticationValues, "get_AuthGetParameters", 0);
+    auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
     if (!m_toString)
     {
         NSLog(@"[Kitty] AuthenticationValues.ToString not");
@@ -5114,12 +5114,33 @@ void initStuff(MemoryFileInfo framework)
 
     Il2CppException* ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
+    if (!strObj)
+    {
+        NSLog(@"[Kitty] ToString returned null");
+        return;
+    }
+
+    // universal IL2CPP-safe type check
+    Il2CppClass* klass = ((Il2CppObject*)strObj)->klass;
+    const char* name = klass->name;
+    NSLog(@"[Kitty] ToString returned type: %s", name);
+
+    if (strcmp(name, "String") != 0)
+    {
+        NSLog(@"[Kitty] Not a string, cannot decode");
+        return;
+    }
 
     Il2CppString* sObj = (Il2CppString*)strObj;
-    std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
+    if (!sObj || sObj->length <= 0)
+    {
+        NSLog(@"[Kitty] Empty or invalid string");
+        return;
+    }
 
-    NSLog(@"[Kitty] AuthValues.ToString => %{public}@", s.c_str());
+    std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
     NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
+
 }
 
 
