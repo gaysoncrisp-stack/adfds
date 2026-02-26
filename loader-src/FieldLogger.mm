@@ -5111,29 +5111,13 @@ void initStuff(MemoryFileInfo framework)
         sleep(1);
     }
 
-    if (!authObj)
-    {
-        NSLog(@"[Kitty] AuthValues still null after waiting");
-        return;
-    }
 
     Il2CppException* ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
 
-    if (ex)
-    {
-        NSLog(@"[Kitty] ToString threw exception");
-        return;
-    }
-
-    if (!strObj)
-    {
-        NSLog(@"[Kitty] ToString returned null");
-        return;
-    }
-
     Il2CppString* sObj = (Il2CppString*)strObj;
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
+    NSLog(@"Value: %{public}@", s.c_str());
     NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
 }
 
