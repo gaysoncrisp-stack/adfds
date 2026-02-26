@@ -4932,82 +4932,199 @@ static Il2CppClass* PhotonNetwork = nullptr;
 
 void initStuff(MemoryFileInfo framework)
 {
-    auto domain_get     = (Il2CppDomain*(*)())KittyScanner::findSymbol(framework, "_il2cpp_domain_get");
-    auto get_assemblies = (Il2CppAssembly**(*)(const Il2CppDomain*, size_t*))KittyScanner::findSymbol(framework, "_il2cpp_domain_get_assemblies");
-    auto get_image      = (Il2CppImage*(*)(const Il2CppAssembly*))KittyScanner::findSymbol(framework, "_il2cpp_assembly_get_image");
-    auto get_class_count= (size_t(*)(const Il2CppImage*))KittyScanner::findSymbol(framework, "_il2cpp_image_get_class_count");
-    auto get_class      = (Il2CppClass*(*)(const Il2CppImage*, size_t))KittyScanner::findSymbol(framework, "_il2cpp_image_get_class");
+    using t_get_method_from_name   = MethodInfo*(*)(Il2CppClass*, const char*, int);
+    using t_string_length          = int32_t(*)(Il2CppString*);
+    using t_string_chars           = Il2CppChar*(*)(Il2CppString*);
+    using t_type_get_object        = Il2CppObject*(*)(const Il2CppType*);
+    using t_string_new             = Il2CppString*(*)(const char*);
+    using t_runtime_invoke         = Il2CppObject*(*)(const MethodInfo*, void*, void**, Il2CppException**);
+    using t_class_get_field_from_name = FieldInfo*(*)(Il2CppClass*, const char*);
+    using t_object_get_class       = Il2CppClass*(*)(Il2CppObject*);
+    using t_field_get_value        = void(*)(Il2CppObject*, FieldInfo*, void*);
+    using t_field_set_value        = void(*)(Il2CppObject*, FieldInfo*, void*);
+    using t_field_static_get_value = void(*)(FieldInfo*, void*);
+    using t_class_get_methods      = const MethodInfo*(*)(Il2CppClass*, void**);
+    using t_class_get_namespace    = const char*(*)(Il2CppClass*);
+    using t_class_get_name         = const char*(*)(Il2CppClass*);
+    using t_type_get_name          = char*(*)(const Il2CppType*);
+    using t_object_unbox           = void*(*)(Il2CppObject*);
+    using t_value_box              = Il2CppObject*(*)(Il2CppClass*, void*);
+    using t_get_class_from_name    = Il2CppClass*(*)(const Il2CppImage*, const char*, const char*);
 
-    s_get_method_from_name = (MethodInfo*(*)(Il2CppClass*, const char*, int))KittyScanner::findSymbol(framework, "_il2cpp_class_get_method_from_name");
-    string_length     = (int32_t(*)(Il2CppString*))KittyScanner::findSymbol(framework, "_il2cpp_string_length");
-    string_chars      = (Il2CppChar*(*)(Il2CppString*))KittyScanner::findSymbol(framework, "_il2cpp_string_chars");
-    s_type_get_object      = (Il2CppObject*(*)(const Il2CppType*))KittyScanner::findSymbol(framework, "_il2cpp_type_get_object");
-    s_string_new           = (Il2CppString*(*)(const char*))KittyScanner::findSymbol(framework, "_il2cpp_string_new");
-    auto thread_attach     = (void*(*)(Il2CppDomain*))KittyScanner::findSymbol(framework, "_il2cpp_thread_attach");
-    s_runtime_invoke       = (Il2CppObject*(*)(const MethodInfo*, void*, void**, Il2CppException**))KittyScanner::findSymbol(framework, "_il2cpp_runtime_invoke");
+    static t_get_method_from_name   s_get_method_from_name = nullptr;
+    static t_string_length          string_length = nullptr;
+    static t_string_chars           string_chars = nullptr;
+    static t_type_get_object        s_type_get_object = nullptr;
+    static t_string_new             s_string_new = nullptr;
+    static t_runtime_invoke         s_runtime_invoke = nullptr;
+    static t_class_get_field_from_name s_class_get_field_from_name = nullptr;
+    static t_object_get_class       s_object_get_class = nullptr;
+    static t_field_get_value        s_field_get_value = nullptr;
+    static t_field_set_value        s_field_set_value = nullptr;
+    static t_field_static_get_value s_field_static_get_value = nullptr;
+    static t_class_get_methods      s_class_get_methods = nullptr;
+    static t_class_get_namespace    s_class_get_namespace = nullptr;
+    static t_class_get_name         s_class_get_name = nullptr;
+    static t_type_get_name          s_type_get_name = nullptr;
+    static t_object_unbox           s_object_unbox = nullptr;
+    static t_value_box              s_value_box = nullptr;
+    static t_get_class_from_name    s_get_class_from_name = nullptr;
 
-    s_class_get_field_from_name = (FieldInfo*(*)(Il2CppClass*, const char*))KittyScanner::findSymbol(framework, "_il2cpp_class_get_field_from_name");
-    s_object_get_class          = (Il2CppClass*(*)(Il2CppObject*))KittyScanner::findSymbol(framework, "_il2cpp_object_get_class");
-    s_field_get_value           = (void(*)(Il2CppObject*, FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_get_value");
-    s_field_set_value           = (void(*)(Il2CppObject*, FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_set_value");
-    s_field_static_get_value = (void(*)(FieldInfo*, void*))KittyScanner::findSymbol(framework, "_il2cpp_field_static_get_value");
-    s_class_get_methods   = (t_class_get_methods)  KittyScanner::findSymbol(framework, "_il2cpp_class_get_methods");
-    s_class_get_namespace = (t_class_get_namespace)KittyScanner::findSymbol(framework, "_il2cpp_class_get_namespace");
-    s_class_get_name      = (t_class_get_name)     KittyScanner::findSymbol(framework, "_il2cpp_class_get_name");
-    s_type_get_name       = (t_type_get_name)      KittyScanner::findSymbol(framework, "_il2cpp_type_get_name");
+    auto domain_get      = (Il2CppDomain*(*)())KittyScanner::findSymbol(framework, "_il2cpp_domain_get");
+    auto get_assemblies  = (Il2CppAssembly**(*)(const Il2CppDomain*, size_t*))KittyScanner::findSymbol(framework, "_il2cpp_domain_get_assemblies");
+    auto get_image       = (Il2CppImage*(*)(const Il2CppAssembly*))KittyScanner::findSymbol(framework, "_il2cpp_assembly_get_image");
+    auto get_class_count = (size_t(*)(const Il2CppImage*))KittyScanner::findSymbol(framework, "_il2cpp_image_get_class_count");
+    auto get_class       = (Il2CppClass*(*)(const Il2CppImage*, size_t))KittyScanner::findSymbol(framework, "_il2cpp_image_get_class");
+    auto thread_attach   = (void*(*)(Il2CppDomain*))KittyScanner::findSymbol(framework, "_il2cpp_thread_attach");
 
+    s_get_method_from_name      = (t_get_method_from_name)KittyScanner::findSymbol(framework, "_il2cpp_class_get_method_from_name");
+    string_length               = (t_string_length)KittyScanner::findSymbol(framework, "_il2cpp_string_length");
+    string_chars                = (t_string_chars)KittyScanner::findSymbol(framework, "_il2cpp_string_chars");
+    s_type_get_object           = (t_type_get_object)KittyScanner::findSymbol(framework, "_il2cpp_type_get_object");
+    s_string_new                = (t_string_new)KittyScanner::findSymbol(framework, "_il2cpp_string_new");
+    s_runtime_invoke            = (t_runtime_invoke)KittyScanner::findSymbol(framework, "_il2cpp_runtime_invoke");
+    s_class_get_field_from_name = (t_class_get_field_from_name)KittyScanner::findSymbol(framework, "_il2cpp_class_get_field_from_name");
+    s_object_get_class          = (t_object_get_class)KittyScanner::findSymbol(framework, "_il2cpp_object_get_class");
+    s_field_get_value           = (t_field_get_value)KittyScanner::findSymbol(framework, "_il2cpp_field_get_value");
+    s_field_set_value           = (t_field_set_value)KittyScanner::findSymbol(framework, "_il2cpp_field_set_value");
+    s_field_static_get_value    = (t_field_static_get_value)KittyScanner::findSymbol(framework, "_il2cpp_field_static_get_value");
+    s_class_get_methods         = (t_class_get_methods)KittyScanner::findSymbol(framework, "_il2cpp_class_get_methods");
+    s_class_get_namespace       = (t_class_get_namespace)KittyScanner::findSymbol(framework, "_il2cpp_class_get_namespace");
+    s_class_get_name            = (t_class_get_name)KittyScanner::findSymbol(framework, "_il2cpp_class_get_name");
+    s_type_get_name             = (t_type_get_name)KittyScanner::findSymbol(framework, "_il2cpp_type_get_name");
+    s_object_unbox              = (t_object_unbox)KittyScanner::findSymbol(framework, "_il2cpp_object_unbox");
+    s_value_box                 = (t_value_box)KittyScanner::findSymbol(framework, "_il2cpp_value_box");
+    s_get_class_from_name       = (t_get_class_from_name)KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
 
-    if (!s_object_unbox) s_object_unbox = (void*(*)(Il2CppObject*))KittyScanner::findSymbol(framework, "_il2cpp_object_unbox");
-    if (!s_value_box)          s_value_box          = (Il2CppObject*(*)(Il2CppClass*,void*))KittyScanner::findSymbol(framework, "_il2cpp_value_box");
-    if (!s_get_class_from_name) s_get_class_from_name = (Il2CppClass*(*)(const char*,const char*))KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
-        
+    if (!domain_get || !get_assemblies || !get_image || !get_class_count || !get_class || !thread_attach ||
+        !s_get_method_from_name || !string_length || !string_chars || !s_runtime_invoke)
+    {
+        NSLog(@"[Kitty] Missing one or more required IL2CPP exports");
+        return;
+    }
+
     auto domain = domain_get();
-    if (thread_attach && domain) thread_attach(domain);
+    if (!domain)
+    {
+        NSLog(@"[Kitty] il2cpp_domain_get returned null");
+        return;
+    }
+
+    thread_attach(domain);
 
     size_t size = 0;
     auto assemblies = get_assemblies(domain, &size);
+    if (!assemblies || size == 0)
+    {
+        NSLog(@"[Kitty] il2cpp_domain_get_assemblies returned no assemblies");
+        return;
+    }
 
-    int okRealClasses = 0;
-    for (int i = 0; i < (int)size; ++i) 
+    imageMap.clear();
+    classMap.clear();
+
+    int totalClasses = 0;
+
+    for (size_t i = 0; i < size; ++i)
     {
         auto assembly = assemblies[i];
+        if (!assembly) continue;
+
         auto image = get_image(assembly);
         if (!image) continue;
-        imageMap[std::string(image->name)] = image;
+
+        std::string imageName = image->name ? image->name : "";
+        imageMap[imageName] = image;
+
         size_t cc = get_class_count(image);
-        for (size_t k = 0; k < cc; ++k) {
+        for (size_t k = 0; k < cc; ++k)
+        {
             Il2CppClass* klass = get_class(image, k);
             if (!klass) continue;
-            classMap[std::string(klass->namespaze)][std::string(klass->name)] = klass;
-            okRealClasses++;
+
+            const char* ns = klass->namespaze ? klass->namespaze : "";
+            const char* name = klass->name ? klass->name : "";
+
+            classMap[std::string(ns)][std::string(name)] = klass;
+            totalClasses++;
         }
     }
-    KITTY_LOGI("Initialized %d total namespaces with %d total classes  ", okRealClasses, (int)classMap.size());
 
-    AuthenticationValues           = classMap["Photon.Realtime"]["AuthenticationValues"];
-    PhotonNetwork            = classMap["Photon.Pun"]["PhotonNetwork"];
+    KITTY_LOGI("Initialized %d total namespaces with %d total classes", (int)classMap.size(), totalClasses);
 
+    AuthenticationValues = nullptr;
+    PhotonNetwork = nullptr;
 
+    auto nsPun = classMap.find("Photon.Pun");
+    if (nsPun != classMap.end())
+    {
+        auto it = nsPun->second.find("PhotonNetwork");
+        if (it != nsPun->second.end())
+            PhotonNetwork = it->second;
+    }
 
-    if (!PhotonNetwork || !AuthenticationValues) {
+    auto nsRealtime = classMap.find("Photon.Realtime");
+    if (nsRealtime != classMap.end())
+    {
+        auto it = nsRealtime->second.find("AuthenticationValues");
+        if (it != nsRealtime->second.end())
+            AuthenticationValues = it->second;
+    }
+
+    if (!PhotonNetwork || !AuthenticationValues)
+    {
         NSLog(@"[Kitty] Missing Photon classes");
         return;
     }
 
     auto m_get_AuthValues = s_get_method_from_name(PhotonNetwork, "get_AuthValues", 0);
-    auto get_AuthValues = (Il2CppObject*(*)())STRIP_FP(m_get_AuthValues->methodPointer);
+    if (!m_get_AuthValues)
+    {
+        NSLog(@"[Kitty] PhotonNetwork.get_AuthValues not found");
+        return;
+    }
 
     auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
+    if (!m_toString)
+    {
+        NSLog(@"[Kitty] AuthenticationValues.ToString not found");
+        return;
+    }
 
     Il2CppException* ex = nullptr;
-    auto sObj = (Il2CppString*)s_runtime_invoke(m_toString, get_AuthValues(), nullptr, &ex);
-    if (ex) { NSLog(@"[Kitty] ToString threw exception"); return; }
-    if (!sObj) { NSLog(@"[Kitty] ToString returned null string"); return; }
-    NSLog(@"[Kitty] ToString invoked OK");
+    Il2CppObject* authObj = s_runtime_invoke(m_get_AuthValues, nullptr, nullptr, &ex);
 
+    if (ex)
+    {
+        NSLog(@"[Kitty] get_AuthValues threw exception");
+        return;
+    }
+
+    if (!authObj)
+    {
+        NSLog(@"[Kitty] get_AuthValues returned null");
+        return;
+    }
+
+    ex = nullptr;
+    Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
+
+    if (ex)
+    {
+        NSLog(@"[Kitty] ToString threw exception");
+        return;
+    }
+
+    if (!strObj)
+    {
+        NSLog(@"[Kitty] ToString returned null");
+        return;
+    }
+
+    Il2CppString* sObj = (Il2CppString*)strObj;
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
+    NSLog(@"[Kitty] ToString invoked OK");
     NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
-
 }
 
 
