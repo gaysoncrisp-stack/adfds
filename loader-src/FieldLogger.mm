@@ -5114,13 +5114,31 @@ void initStuff(MemoryFileInfo framework)
 
     Il2CppException* ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
+    Il2CppObject* getParams = s_runtime_invoke(m_get_AuthGetParameters, authObj, nullptr, &ex);
+    Il2CppObject* postData = s_runtime_invoke(m_get_AuthPostData, authObj, nullptr, &ex);
+    Il2CppObject* token = s_runtime_invoke(m_get_Token, authObj, nullptr, &ex);
+    Il2CppObject* userId = s_runtime_invoke(m_get_UserId, authObj, nullptr, &ex);
 
     Il2CppString* sObj = (Il2CppString*)strObj;
+    Il2CppString* sP = (Il2CppString*)getParams;
+    Il2CppString* sD = (Il2CppString*)postData;
+    Il2CppString* sT = (Il2CppString*)token;
+    Il2CppString* sU = (Il2CppString*)userId;
 
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
-
     KITTY_LOGI("[Kitty] AuthValues.ToString => %{public}s", s.c_str());
 
+    std::string sAuthGetParameters = il2cpp_string_to_std(sP, string_chars, string_length);
+    KITTY_LOGI("[Kitty] AuthValues AuthGetParameters => %{public}s", sAuthGetParameters.c_str());
+
+    std::string spostData = il2cpp_string_to_std(sD, string_chars, string_length);
+    KITTY_LOGI("[Kitty] AuthValues AuthPostData=> %{public}s", spostData.c_str());
+
+    std::string stoken = il2cpp_string_to_std(sT, string_chars, string_length);
+    KITTY_LOGI("[Kitty] AuthValues Token => %{public}s", stoken.c_str());
+
+    std::string suserId = il2cpp_string_to_std(sU, string_chars, string_length);
+    KITTY_LOGI("[Kitty] AuthValues UserId => %{public}s", suserId.c_str());
 
 
 }
