@@ -5091,23 +5091,33 @@ void initStuff(MemoryFileInfo framework)
         return;
     }
 
-    Il2CppException* ex = nullptr;
-    Il2CppObject* authObj = s_runtime_invoke(m_get_AuthValues, nullptr, nullptr, &ex);
+    Il2CppObject* authObj = nullptr;
 
-    if (ex)
+    while(authObj == nullptr)
     {
-        NSLog(@"[Kitty] get_AuthValues threw exception");
+        Il2CppException* ex = nullptr;
+        authObj = s_runtime_invoke(m_get_AuthValues, nullptr, nullptr, &ex);
+
+        if (ex)
+        {
+            NSLog(@"[Kitty] get_AuthValues threw exception while waiting");
+            return;
+        }
+
+        if (authObj)
+            break;
+
+        NSLog(@"[Kitty] get_AuthValues returned null, retrying...");
+        sleep(1);
+    }
+
+    if (!authObj)
+    {
+        NSLog(@"[Kitty] AuthValues still null after waiting");
         return;
     }
 
-    while (!authObj)
-    {
-        NSLog(@"[Kitty] get_AuthValues returned null");
-        sleep(2);
-    }
-
-    
-    ex = nullptr;
+    Il2CppException* ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
 
     if (ex)
@@ -5124,7 +5134,6 @@ void initStuff(MemoryFileInfo framework)
 
     Il2CppString* sObj = (Il2CppString*)strObj;
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
-    NSLog(@"[Kitty] ToString invoked OK");
     NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
 }
 
