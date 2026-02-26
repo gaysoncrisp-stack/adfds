@@ -4928,7 +4928,6 @@ static void StartFramePump()
     });
 }
 
-static Il2CppClass* AuthenticationValues = nullptr;
 static Il2CppClass* PhotonNetwork = nullptr;
 
 void initStuff(MemoryFileInfo framework)
@@ -5001,7 +5000,7 @@ void initStuff(MemoryFileInfo framework)
     auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
 
     Il2CppException* ex = nullptr;
-    auto sObj = (Il2CppString*)s_runtime_invoke(m_toString, get_AuthValues, nullptr, &ex);
+    auto sObj = (Il2CppString*)s_runtime_invoke(m_toString, get_AuthValues(), nullptr, &ex);
     if (ex) { NSLog(@"[Kitty] ToString threw exception"); return; }
     if (!sObj) { NSLog(@"[Kitty] ToString returned null string"); return; }
     NSLog(@"[Kitty] ToString invoked OK");
