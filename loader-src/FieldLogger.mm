@@ -5141,6 +5141,10 @@ void initStuff(MemoryFileInfo framework)
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
     NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
 
+    kittylog("[Kitty] AuthValues.ToString => %s", s.c_str());
+
+
+
 }
 
 
