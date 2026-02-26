@@ -5117,8 +5117,7 @@ void initStuff(MemoryFileInfo framework)
 
     Il2CppString* sObj = (Il2CppString*)strObj;
     std::string s = il2cpp_string_to_std(sObj, string_chars, string_length);
-    NSLog(@"Value: %{public}@", s.c_str());
-    NSLog(@"[Kitty] AuthValues.ToString => %s", s.c_str());
+    NSLog(@"[Kitty] AuthValues.ToString => %{public}@", s.c_str());
 }
 
 
