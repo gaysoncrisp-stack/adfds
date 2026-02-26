@@ -5100,12 +5100,13 @@ void initStuff(MemoryFileInfo framework)
         return;
     }
 
-    if (!authObj)
+    while (!authObj)
     {
         NSLog(@"[Kitty] get_AuthValues returned null");
-        return;
+        sleep(2);
     }
 
+    
     ex = nullptr;
     Il2CppObject* strObj = s_runtime_invoke(m_toString, authObj, nullptr, &ex);
 
