@@ -4767,7 +4767,31 @@ static void CustomTick()
 { 
     if (g_cfgItemSpammer.load())
     {
-       
+        auto nsPun = classMap.find("Photon.Pun");
+        if (nsPun != classMap.end())
+        {
+            auto it = nsPun->second.find("PhotonNetwork");
+            if (it != nsPun->second.end())
+                PhotonNetwork = it->second;
+        }
+        if (!PhotonNetwork)
+        {
+            NSLog(@"[Kitty] Missing Photon classes");
+            return;
+        }
+        auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
+        if (!m_get_AutomaticallySyncScene)
+        {
+            NSLog(@"[Kitty] PhotonNetwork.get_AutomaticallySyncScene not found");
+            return;
+        }
+
+        bool syncObj = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
+
+        if(syncObj == false)
+        {
+            NSLog(@"[Kitty] sync obj false");
+        }
     }
 
 }
