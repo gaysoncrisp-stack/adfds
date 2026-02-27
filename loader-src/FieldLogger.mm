@@ -5001,7 +5001,6 @@ void initStuff(MemoryFileInfo framework)
     KITTY_LOGI("[Kitty] AuthValues UserId => %{public}s", suserId.c_str());
 
         auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
-        Il2CppException* ex = nullptr;
         Il2CppObject* result = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
 
         if (ex)
