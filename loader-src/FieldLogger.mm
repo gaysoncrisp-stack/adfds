@@ -5003,7 +5003,6 @@ void initStuff(MemoryFileInfo framework)
 
     StartConfigPoll();
     StartFramePump();
-
 }
 
 
