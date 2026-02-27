@@ -4785,9 +4785,14 @@ static void CustomTick()
             NSLog(@"[Kitty] PhotonNetwork.get_AutomaticallySyncScene not fnd");
             return;
         }
-
+        Il2CppException* ex = nullptr;
         bool syncObj = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
 
+        if (ex)
+        {
+            NSLog(@"[Kitty] sync threw exception while waiting");
+            return;
+        }
         if(syncObj == false)
         {
             NSLog(@"[Kitty] sync obj false");
