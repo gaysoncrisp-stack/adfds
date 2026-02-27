@@ -4782,7 +4782,7 @@ static void CustomTick()
         auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
         if (!m_get_AutomaticallySyncScene)
         {
-            NSLog(@"[Kitty] PhotonNetwork.get_AutomaticallySyncScene not found");
+            NSLog(@"[Kitty] PhotonNetwork.get_AutomaticallySyncScene not fnd");
             return;
         }
 
