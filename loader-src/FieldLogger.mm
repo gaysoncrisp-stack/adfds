@@ -4780,20 +4780,24 @@ static void CustomTick()
             return;
         }
         auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
-        if (!m_get_AutomaticallySyncScene)
-        {
-            NSLog(@"[Kitty] PhotonNetwork.get_AutomaticallySyncScene not fnd");
-            return;
-        }
         Il2CppException* ex = nullptr;
-        bool syncObj = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
+        Il2CppObject* result = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
 
         if (ex)
         {
             NSLog(@"[Kitty] sync threw exception while waiting");
             return;
         }
-        if(syncObj == false)
+
+        if (!result)
+        {
+            NSLog(@"[Kitty] sync returned null");
+            return;
+        }
+
+        bool syncObj = *(bool*)s_object_unbox(result);
+
+        if (!syncObj)
         {
             NSLog(@"[Kitty] sync obj false");
         }
