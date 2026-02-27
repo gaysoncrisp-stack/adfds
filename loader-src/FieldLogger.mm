@@ -697,7 +697,7 @@ static void DeleteAll()
     for (il2cpp_array_size_t i = 0; i < arr->max_length; ++i) 
     {
         Il2CppObject* nm = elems[i];
-        auto pv = s_field_get_value(nm, f_pv,   &spv);
+        Il2CppObject* pv = s_field_get_value(nm, f_pv,   &spv);
 
         void* argsFO3[1] = { actor };
         s_runtime_invoke(m_set_ControllerActorNr, pv, argsFO3, &ex);
@@ -707,7 +707,7 @@ static void DeleteAll()
 }
 static void DestroyAll()
 {
-    Il2CppException* ex3 = nullptr;
+    Il2CppException* ex = nullptr;
     auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
     s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
     NSLog(@"[Kitty] destroyed all...");    
