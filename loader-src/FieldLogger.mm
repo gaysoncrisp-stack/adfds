@@ -5039,7 +5039,7 @@ void initStuff(MemoryFileInfo framework)
                auto m_get_LocalPlayer = s_get_method_from_name(PhotonNetwork, "get_LocalPlayer", 0);
                Il2CppObject* local = s_runtime_invoke(m_get_LocalPlayer, nullptr, nullptr, &ex);
 
-               auto m_get_ActorNumber = s_get_method_from_name(PhotonNetwork, "get_ActorNumber", 0);
+               auto m_get_ActorNumber = s_get_method_from_name(Player, "get_ActorNumber", 0);
                auto actor = s_runtime_invoke(m_get_ActorNumber, local, nullptr, &ex);
 
                static MethodInfo* m_FindObjectsOfType = nullptr;
