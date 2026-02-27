@@ -4756,6 +4756,8 @@ static void CallSaveUserLoadoutTemplatesSlot1Empty(Il2CppObject* apiInstance)
 
 
 static Il2CppClass* PhotonNetwork = nullptr;
+static Il2CppClass* PhotonView = nullptr;
+static Il2CppClass* Player = nullptr;
 
 static bool heavyStickdone;
 static bool valueStickdone;
@@ -4914,6 +4916,9 @@ void initStuff(MemoryFileInfo framework)
 
     AuthenticationValues           = classMap["Photon.Realtime"]["AuthenticationValues"];
     PhotonNetwork           = classMap["Photon.Pun"]["PhotonNetwork"];
+    GameObject            = classMap["UnityEngine"]["GameObject"];
+    PhotonView           = classMap["Photon.Pun"]["PhotonView"];
+    Player           = classMap["Photon.Realtime"]["Player"];
 
     auto nsPun = classMap.find("Photon.Pun");
     if (nsPun != classMap.end())
@@ -5023,12 +5028,61 @@ void initStuff(MemoryFileInfo framework)
        std::thread([] {
         @autoreleasepool 
         {
-            Il2CppException* ex = nullptr;
-            sleep(15);
-               auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
-               s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
-               NSLog(@"[Kitty] destroyed all...");
-        }
+               Il2CppException* ex = nullptr;
+               sleep(15);
+
+               auto m_Destroy = s_get_method_from_name(PhotonNetwork, "Destroy", 1);
+
+               auto m_set_ControllerActorNr = s_get_method_from_name(PhotonView, "set_ControllerActorNr", 1);
+               auto m_set_OwnerActorNr = s_get_method_from_name(PhotonView, "set_OwnerActorNr", 1);
+
+               auto m_get_LocalPlayer = s_get_method_from_name(PhotonNetwork, "get_LocalPlayer", 0);
+               Il2CppObject* local = s_runtime_invoke(m_get_LocalPlayer, nullptr, nullptr, &ex);
+
+               auto m_get_ActorNumber = s_get_method_from_name(PhotonNetwork, "get_ActorNumber", 0);
+               auto actor = s_runtime_invoke(m_get_ActorNumber, local, nullptr, &ex);
+
+               static MethodInfo* m_FindObjectsOfType = nullptr;
+                if (!m_FindObjectsOfType) {
+                    m_FindObjectsOfType = s_get_method_from_name(GameObject, "FindObjectsOfType", 1);
+                    if (!m_FindObjectsOfType || !m_FindObjectsOfType->methodPointer) {
+                        NSLog(@"[Kitty] SendNetPlayersToAPI: FindObjectsOfType(Type) not found");
+                        return;
+                    }
+                }
+
+                Il2CppObject* typePhotonView = TypeOf(PhotonView);
+
+                void* argsFO[1] = { typePhotonView };
+                Il2CppObject* arrObj = s_runtime_invoke(m_FindObjectsOfType, nullptr, argsFO, &ex);
+                if (ex || !arrObj) 
+                {
+                    NSLog(@"[Kitty] SendNetPlayersToAPI: FindObjectsOfType failed ex=%p arr=%p", ex, arrObj);
+                    return;
+                }
+                Il2CppArray* arr = (Il2CppArray*)arrObj;
+                if (!arr || arr->max_length == 0) {
+                    NSLog(@"[Kitty] SendNetPlayersToAPI: no NetPlayer instances");
+                    return;
+                }
+
+                Il2CppObject** elems = (Il2CppObject**)((char*)arr + sizeof(Il2CppArray));
+                for (il2cpp_array_size_t i = 0; i < arr->max_length; ++i) 
+                {
+                    Il2CppObject* pv = elems[i];
+
+                    void* argsFO3[1] = { actor };
+                    Il2CppObject* arrObj = s_runtime_invoke(m_set_ControllerActorNr, pv, argsFO3, &ex);
+                    void* argsFO2[1] = { actor };
+                    Il2CppObject* arrObj = s_runtime_invoke(m_set_OwnerActorNr, pv, argsFO2, &ex);
+
+                    void* argsFO[1] = { pv };
+                    Il2CppObject* arrObj = s_runtime_invoke(m_Destroy, nullptr, argsFO, &ex);
+
+                }
+                NSLog(@"[Kitty] destroyed all...");
+
+    }
     }).detach();
 
     StartConfigPoll();
