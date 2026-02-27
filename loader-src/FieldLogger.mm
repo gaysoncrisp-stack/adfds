@@ -4755,6 +4755,7 @@ static void CallSaveUserLoadoutTemplatesSlot1Empty(Il2CppObject* apiInstance)
 
 
 
+static Il2CppClass* PhotonNetwork = nullptr;
 
 static bool heavyStickdone;
 static bool valueStickdone;
@@ -4791,9 +4792,6 @@ static void StartFramePump()
         KITTY_LOGI("FramePump started with CADisplayLink  ");
     });
 }
-
-static Il2CppClass* PhotonNetwork = nullptr;
-
 void initStuff(MemoryFileInfo framework)
 {
     using t_get_method_from_name   = MethodInfo*(*)(Il2CppClass*, const char*, int);
