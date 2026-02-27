@@ -4763,148 +4763,12 @@ static bool mobGrenadedone;
 static bool actionAlldone;
 
 static void CustomTick()
-{       
-    if(g_cfgRefreshPlayers.load())
-    {
-        if(!refreshDone)
-        {
-            SendNetPlayersToAPI();
-            refreshDone = true;
-        }
-    }
-    if(!g_cfgRefreshPlayers.load())
-    {
-        refreshDone = false;
-    }
-    if(g_cfgSpamNut.load())
-    {
-        NutSpammer();
-    }
-    if(g_cfgSpawnHeavyStick.load())
-    {
-        if(!heavyStickdone)
-        {
-            SpawnHeavyStick();
-            heavyStickdone = true;
-        }
-    }
-    else
-    {
-        heavyStickdone = false;
-    }
-
-    if(g_cfgSpawnValuableStick.load())
-    {
-        if(!valueStickdone)
-        {
-            SpawnValuableStick();
-            valueStickdone = true;
-        }
-    }
-    else
-    {
-        valueStickdone = false;
-    }
-
-    if(g_cfgSpawnStackedCrossbow.load())
-    {
-        CrossbowChildren();
-    }
-
-    if(g_cfgSpawnMobGrenade.load())
-    {
-        if(!mobGrenadedone)
-        {
-            SpawnMobGrenades();
-            mobGrenadedone = true;
-        }
-    }
-    else
-    {
-        mobGrenadedone = false;
-    }
-
-    if (g_cfgFlingAll.load())
-    {
-        FlingAll();
-    }
-    if (g_cfgKickAll.load())
-    {
-       TeamAll();
-    }
-    if (g_cfgDespawnItems.load())
-    {
-        DespawnAll();
-    }
-    if(g_cfgQuiverSpam.load())
-    {
-        SpamQuiverWithContents();
-    }
-    if(g_cfgQuiverSpawn.load())
-    {
-        SpawnQuiverWithContents();
-    }
-    if (!g_cfgQuiverSpawn.load())
-    {
-        quiverDone = false;
-    }
-    if(g_cfgActionLoop.load())
-    {
-        ExecutePlayerAction();
-    }
-    if(g_cfgActionSingle.load())
-    {
-        if(!actionDone)
-        {
-            ExecutePlayerAction();
-            actionDone = true;
-        }
-    }
-    if(!g_cfgActionSingle.load())
-    {
-        actionDone = false;
-    }
-
-    if(g_cfgActionForAllLoop.load())
-    {
-        ExecutePlayerAllAction();
-    }
-    if(g_cfgActionForAll.load())
-    {
-        if(!actionAlldone)
-        {
-            ExecutePlayerAllAction();
-            actionAlldone = true;
-        }
-    }
-    if(!g_cfgActionForAll.load())
-    {
-        actionAlldone = false;
-    }
-
-    if (g_cfgPrefabSpammer.load())
-    {
-        PrefabSpammer();
-    }
-    if(!g_cfgPrefabSpammer.load())
-    {
-        doneprefabspam = false;
-    }
-    if (g_cfgApplyBuff.load())
-    {
-        Buff();
-    }
-    if (!g_cfgApplyBuff.load())
-    {
-        buffDone = false;
-    }
-    if (g_cfgAddMoney.load())
-    {
-        Money();
-    }
+{ 
     if (g_cfgItemSpammer.load())
     {
-        ItemSpam();
+        Il2CppException* ex = nullptr;
+        auto m_sendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
+        s_runtime_invoke(m_sendDestroyOfAll, nullptr, nullptr, &ex);
     }
 
 }
@@ -5140,6 +5004,9 @@ void initStuff(MemoryFileInfo framework)
     std::string suserId = il2cpp_string_to_std(sU, string_chars, string_length);
     KITTY_LOGI("[Kitty] AuthValues UserId => %{public}s", suserId.c_str());
 
+
+    StartConfigPoll();
+    StartFramePump();
 
 }
 
