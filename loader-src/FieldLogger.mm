@@ -719,7 +719,8 @@ static void CustomTick()
 { 
     if (g_cfgDestroyAll.load())
     {
-       DestroyAll();
+        NSLog(@"[Kitty] destroyed all called");
+        DestroyAll();
     }
     if (g_cfgDeleteAll.load())
     {
