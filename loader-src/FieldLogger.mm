@@ -5054,7 +5054,7 @@ void initStuff(MemoryFileInfo framework)
                     }
                 }
 
-                Il2CppObject* typePhotonView = TypeOf(PhotonView);
+                Il2CppObject* typePhotonView = s_type_get_object(PhotonView);
                 if (!typePhotonView) {
                         NSLog(@"[Kitty] SendNetPlayersToAPI: TypeOf(NetPlayer) failed");
                         return;
