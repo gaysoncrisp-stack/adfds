@@ -708,8 +708,15 @@ static void DeleteAll()
 static void DestroyAll()
 {
     Il2CppException* ex = nullptr;
-    auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
-    s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
+    auto m_get_AuthValues = s_get_method_from_name(PhotonNetwork, "get_AuthValues", 0);
+    if (!m_get_AuthValues)
+    {
+        NSLog(@"[Kitty] PhotonNetwork.get_AuthValues not found");
+        return;
+    }
+    Il2CppObject* authObj = nullptr;
+    authObj = s_runtime_invoke(m_get_AuthValues, nullptr, nullptr, &ex);
+    
     NSLog(@"[Kitty] destroyed all...");    
 }
 
