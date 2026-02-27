@@ -4768,8 +4768,12 @@ static void CustomTick()
     if (g_cfgItemSpammer.load())
     {
         Il2CppException* ex = nullptr;
-        auto m_sendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
-        s_runtime_invoke(m_sendDestroyOfAll, nullptr, nullptr, &ex);
+        auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
+        bool syncScene = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
+        if(syncScene)
+        {
+           KITTY_LOGI("synced scene");
+        }
     }
 
 }
