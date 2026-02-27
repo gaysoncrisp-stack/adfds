@@ -618,12 +618,11 @@ struct System_Nullable_1_Fusion_PlayerRef_ {
     PlayerRefNative value;
 };
 
-static bool doneprefabspam;
-static bool doneFetchingPrefabs;
-static Il2CppClass* Crossbow;
+static Il2CppClass* PhotonNetwork = nullptr;
+static Il2CppClass* PhotonView = nullptr;
+static Il2CppClass* Player = nullptr;
+static Il2CppClass* NetworkMessenger = nullptr;
 
-static bool CrossbowsDone;
-static bool crossbowDoneMod;
 static std::string ToStdString(Il2CppString* s) {
     return il2cpp_string_to_std(s, string_chars, string_length);
 }
@@ -713,12 +712,6 @@ static void DestroyAll()
 }
 
 
-
-
-static Il2CppClass* PhotonNetwork = nullptr;
-static Il2CppClass* PhotonView = nullptr;
-static Il2CppClass* Player = nullptr;
-static Il2CppClass* NetworkMessenger = nullptr;
 
 static void CustomTick()
 { 
