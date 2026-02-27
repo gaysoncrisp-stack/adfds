@@ -643,13 +643,15 @@ static void InitHooks()
 }
 static void DeleteAll()
 {
+    
+    Il2CppException* ex = nullptr;
+
     FieldInfo* f_pv   = s_class_get_field_from_name(NetworkMessenger, "][[][]]][[]]][[][]][][][[][[[]][]][[[[][]]][]]]");
     if (!f_pv) {
         NSLog(@"[Kitty] one or more fields are missing");
         return;
     }
     Il2CppObject *spv   = nullptr;
-
 
     auto m_set_ControllerActorNr = s_get_method_from_name(PhotonView, "set_ControllerActorNr", 1);
     auto m_set_OwnerActorNr = s_get_method_from_name(PhotonView, "set_OwnerActorNr", 1);
