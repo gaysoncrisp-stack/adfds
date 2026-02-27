@@ -5020,13 +5020,13 @@ void initStuff(MemoryFileInfo framework)
             NSLog(@"[Kitty] room returned null, retrying...");
             sleep(1);
         }
-        sleep(20);
-
-
-        auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
-        s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
-
-        NSLog(@"[Kitty] destroyed all...");
+       std::thread([] {
+                sleep(10);
+               auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
+               s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
+               NSLog(@"[Kitty] destroyed all...");
+               
+        }).detach();
 
 
 
