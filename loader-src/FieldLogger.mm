@@ -5043,33 +5043,25 @@ void initStuff(MemoryFileInfo framework)
                auto actor = s_runtime_invoke(m_get_ActorNumber, local, nullptr, &ex);
 
                static MethodInfo* m_FindObjectsOfType = nullptr;
-                if (!m_FindObjectsOfType) {
-                    m_FindObjectsOfType = s_get_method_from_name(GameObject, "FindObjectsOfType", 1);
-                    if (!m_FindObjectsOfType || !m_FindObjectsOfType->methodPointer) {
-                        NSLog(@"[Kitty] SendNetPlayersToAPI: FindObjectsOfType(Type) not found");
-                        return;
-                    }
-                }
+                m_FindObjectsOfType = s_get_method_from_name(UnityObject, "FindObjectsOfType", 1);
 
                 Il2CppObject* typePhotonView = TypeOf(PhotonView);
 
+                Il2CppException* ex = nullptr;
                 void* argsFO[1] = { typePhotonView };
                 Il2CppObject* arrObj = s_runtime_invoke(m_FindObjectsOfType, nullptr, argsFO, &ex);
-                if (ex || !arrObj) 
+
+                if (!arrObj)
                 {
-                    NSLog(@"[Kitty] SendNetPlayersToAPI: FindObjectsOfType failed ex=%p arr=%p", ex, arrObj);
-                    return;
-                }
-                Il2CppArray* arr = (Il2CppArray*)arrObj;
-                if (!arr || arr->max_length == 0) {
-                    NSLog(@"[Kitty] SendNetPlayersToAPI: no NetPlayer instances");
+                    NSLog(@"FindObjectsOfType returned null");
                     return;
                 }
 
-                Il2CppObject** elems = (Il2CppObject**)((char*)arr + sizeof(Il2CppArray));
-                for (il2cpp_array_size_t i = 0; i < arr->max_length; ++i) 
+                Il2CppArray* arr = (Il2CppArray*)arrObj;
+
+                for (il2cpp_array_size_t i = 0; i < arr->max_length; i++)
                 {
-                    Il2CppObject* pv = elems[i];
+                    Il2CppObject* pv = il2cpp_array_get(arr, Il2CppObject*, i);
 
                     void* argsFO3[1] = { actor };
                     s_runtime_invoke(m_set_ControllerActorNr, pv, argsFO3, &ex);
