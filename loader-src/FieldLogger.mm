@@ -4916,8 +4916,8 @@ void initStuff(MemoryFileInfo framework)
 
     KITTY_LOGI("Initialized %d total namespaces with %d total classes", (int)classMap.size(), totalClasses);
 
-    AuthenticationValues = nullptr;
-    PhotonNetwork = nullptr;
+    AuthenticationValues           = classMap["Photon.Realtime"]["AuthenticationValues"];
+    PhotonNetwork           = classMap["Photon.Pun"]["PhotonNetwork"];
 
     auto nsPun = classMap.find("Photon.Pun");
     if (nsPun != classMap.end())
