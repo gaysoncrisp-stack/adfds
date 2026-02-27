@@ -5000,27 +5000,31 @@ void initStuff(MemoryFileInfo framework)
     std::string suserId = il2cpp_string_to_std(sU, string_chars, string_length);
     KITTY_LOGI("[Kitty] AuthValues UserId => %{public}s", suserId.c_str());
 
-        auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
-        Il2CppObject* result = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
+        auto m_get_CurrentRoom = s_get_method_from_name(PhotonNetwork, "get_CurrentRoom", 0);
+        Il2CppObject* roomObj = nullptr;
 
-        if (ex)
+        while(roomObj == nullptr)
         {
-            NSLog(@"[Kitty] sync threw exception while waiting");
-            return;
+            Il2CppException* ex = nullptr;
+            roomObj = s_runtime_invoke(m_get_CurrentRoom, nullptr, nullptr, &ex);
+
+            if (ex)
+            {
+                NSLog(@"[Kitty] room threw exception while waiting");
+                return;
+            }
+
+            if (roomObj)
+                break;
+
+            NSLog(@"[Kitty] room returned null, retrying...");
+            sleep(1);
         }
 
-        if (!result)
-        {
-            NSLog(@"[Kitty] sync returned null");
-            return;
-        }
 
-        bool syncObj = *(bool*)s_object_unbox(result);
+        auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
+        s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
 
-        if (!syncObj)
-        {
-            NSLog(@"[Kitty] sync obj false");
-        }
 
 
     StartConfigPoll();
