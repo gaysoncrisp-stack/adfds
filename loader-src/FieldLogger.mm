@@ -618,6 +618,12 @@ struct System_Nullable_1_Fusion_PlayerRef_ {
     PlayerRefNative value;
 };
 
+static Il2CppDomain* g_domain = nullptr;
+static void* (*g_thread_attach)(Il2CppDomain*) = nullptr;
+static thread_local bool g_threadAttached = false;
+
+
+
 static Il2CppClass* PhotonNetwork = nullptr;
 static Il2CppClass* PhotonView = nullptr;
 static Il2CppClass* Player = nullptr;
@@ -708,15 +714,8 @@ static void DeleteAll()
 static void DestroyAll()
 {
     Il2CppException* ex = nullptr;
-    auto m_get_AuthValues = s_get_method_from_name(PhotonNetwork, "get_AuthValues", 0);
-    if (!m_get_AuthValues)
-    {
-        NSLog(@"[Kitty] PhotonNetwork.get_AuthValues not found");
-        return;
-    }
-    Il2CppObject* authObj = nullptr;
-    authObj = s_runtime_invoke(m_get_AuthValues, nullptr, nullptr, &ex);
-    
+    auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
+    s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
     NSLog(@"[Kitty] destroyed all...");    
 }
 
@@ -724,6 +723,11 @@ static void DestroyAll()
 
 static void CustomTick()
 { 
+    if (!g_threadAttached && g_thread_attach && g_domain)
+    {
+        g_thread_attach(g_domain);
+        g_threadAttached = true;
+    }
     if (g_cfgDestroyAll.load())
     {
         NSLog(@"[Kitty] destroyed all called");
@@ -832,7 +836,8 @@ void initStuff(MemoryFileInfo framework)
         NSLog(@"[Kitty] il2cpp_domain_get returned null");
         return;
     }
-
+    g_domain = domain;
+    g_thread_attach = (void*(*)(Il2CppDomain*))KittyScanner::findSymbol(framework, "_il2cpp_thread_attach");
     thread_attach(domain);
 
     size_t size = 0;
