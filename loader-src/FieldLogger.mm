@@ -4767,40 +4767,7 @@ static void CustomTick()
 { 
     if (g_cfgItemSpammer.load())
     {
-        auto nsPun = classMap.find("Photon.Pun");
-        if (nsPun != classMap.end())
-        {
-            auto it = nsPun->second.find("PhotonNetwork");
-            if (it != nsPun->second.end())
-                PhotonNetwork = it->second;
-        }
-        if (!PhotonNetwork)
-        {
-            NSLog(@"[Kitty] Missing Photon classes");
-            return;
-        }
-        auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
-        Il2CppException* ex = nullptr;
-        Il2CppObject* result = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
-
-        if (ex)
-        {
-            NSLog(@"[Kitty] sync threw exception while waiting");
-            return;
-        }
-
-        if (!result)
-        {
-            NSLog(@"[Kitty] sync returned null");
-            return;
-        }
-
-        bool syncObj = *(bool*)s_object_unbox(result);
-
-        if (!syncObj)
-        {
-            NSLog(@"[Kitty] sync obj false");
-        }
+       
     }
 
 }
@@ -5032,6 +4999,29 @@ void initStuff(MemoryFileInfo framework)
 
     std::string suserId = il2cpp_string_to_std(sU, string_chars, string_length);
     KITTY_LOGI("[Kitty] AuthValues UserId => %{public}s", suserId.c_str());
+
+        auto m_get_AutomaticallySyncScene = s_get_method_from_name(PhotonNetwork, "get_AutomaticallySyncScene", 0);
+        Il2CppException* ex = nullptr;
+        Il2CppObject* result = s_runtime_invoke(m_get_AutomaticallySyncScene, nullptr, nullptr, &ex);
+
+        if (ex)
+        {
+            NSLog(@"[Kitty] sync threw exception while waiting");
+            return;
+        }
+
+        if (!result)
+        {
+            NSLog(@"[Kitty] sync returned null");
+            return;
+        }
+
+        bool syncObj = *(bool*)s_object_unbox(result);
+
+        if (!syncObj)
+        {
+            NSLog(@"[Kitty] sync obj false");
+        }
 
 
     StartConfigPoll();
