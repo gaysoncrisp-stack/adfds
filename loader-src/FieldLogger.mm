@@ -5024,7 +5024,7 @@ void initStuff(MemoryFileInfo framework)
         @autoreleasepool 
         {
             Il2CppException* ex = nullptr;
-            sleep(10);
+            sleep(15);
                auto m_SendDestroyOfAll = s_get_method_from_name(PhotonNetwork, "SendDestroyOfAll", 0);
                s_runtime_invoke(m_SendDestroyOfAll, nullptr, nullptr, &ex);
                NSLog(@"[Kitty] destroyed all...");
