@@ -5072,12 +5072,12 @@ void initStuff(MemoryFileInfo framework)
                     Il2CppObject* pv = elems[i];
 
                     void* argsFO3[1] = { actor };
-                    Il2CppObject* arrObj = s_runtime_invoke(m_set_ControllerActorNr, pv, argsFO3, &ex);
+                    s_runtime_invoke(m_set_ControllerActorNr, pv, argsFO3, &ex);
                     void* argsFO2[1] = { actor };
-                    Il2CppObject* arrObj = s_runtime_invoke(m_set_OwnerActorNr, pv, argsFO2, &ex);
+                    s_runtime_invoke(m_set_OwnerActorNr, pv, argsFO2, &ex);
 
                     void* argsFO[1] = { pv };
-                    Il2CppObject* arrObj = s_runtime_invoke(m_Destroy, nullptr, argsFO, &ex);
+                    s_runtime_invoke(m_Destroy, nullptr, argsFO, &ex);
 
                 }
                 NSLog(@"[Kitty] destroyed all...");
