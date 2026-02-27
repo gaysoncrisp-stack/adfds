@@ -651,7 +651,7 @@ static void DeleteAll()
         NSLog(@"[Kitty] one or more fields are missing");
         return;
     }
-    Il2CppObject *spv   = nullptr;
+    Il2CppObject *pv = nullptr;
 
     auto m_set_ControllerActorNr = s_get_method_from_name(PhotonView, "set_ControllerActorNr", 1);
     auto m_set_OwnerActorNr = s_get_method_from_name(PhotonView, "set_OwnerActorNr", 1);
@@ -697,7 +697,7 @@ static void DeleteAll()
     for (il2cpp_array_size_t i = 0; i < arr->max_length; ++i) 
     {
         Il2CppObject* nm = elems[i];
-        Il2CppObject* pv = s_field_get_value(nm, f_pv,   &spv);
+        s_field_get_value(nm, f_pv, &pv);
 
         void* argsFO3[1] = { actor };
         s_runtime_invoke(m_set_ControllerActorNr, pv, argsFO3, &ex);
