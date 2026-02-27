@@ -5017,7 +5017,7 @@ void initStuff(MemoryFileInfo framework)
             if (roomObj)
                 break;
 
-            NSLog(@"[Kitty] room returned null, retrying...");
+            NSLog(@"[Kitty] room returned null, retrying..");
             sleep(1);
         }
        std::thread([] {
