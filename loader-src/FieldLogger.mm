@@ -5070,7 +5070,7 @@ void initStuff(MemoryFileInfo framework)
 
                 // Unbox actor number
                 Il2CppObject* boxedActor = s_runtime_invoke(m_get_ActorNumber, local, nullptr, &ex);
-                int actor = *(int*)il2cpp_object_unbox(boxedActor);
+                int actor = *(int*)s_object_unbox(boxedActor);
 
                 for (il2cpp_array_size_t i = 0; i < arr->max_length; ++i)
                 {
