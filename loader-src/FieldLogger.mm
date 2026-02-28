@@ -622,6 +622,44 @@ static Il2CppDomain* g_domain = nullptr;
 static void* (*g_thread_attach)(Il2CppDomain*) = nullptr;
 static thread_local bool g_threadAttached = false;
 
+    using t_get_method_from_name   = MethodInfo*(*)(Il2CppClass*, const char*, int);
+    using t_string_length          = int32_t(*)(Il2CppString*);
+    using t_string_chars           = Il2CppChar*(*)(Il2CppString*);
+    using t_type_get_object        = Il2CppObject*(*)(const Il2CppType*);
+    using t_string_new             = Il2CppString*(*)(const char*);
+    using t_runtime_invoke         = Il2CppObject*(*)(const MethodInfo*, void*, void**, Il2CppException**);
+    using t_class_get_field_from_name = FieldInfo*(*)(Il2CppClass*, const char*);
+    using t_object_get_class       = Il2CppClass*(*)(Il2CppObject*);
+    using t_field_get_value        = void(*)(Il2CppObject*, FieldInfo*, void*);
+    using t_field_set_value        = void(*)(Il2CppObject*, FieldInfo*, void*);
+    using t_field_static_get_value = void(*)(FieldInfo*, void*);
+    using t_class_get_methods      = const MethodInfo*(*)(Il2CppClass*, void**);
+    using t_class_get_namespace    = const char*(*)(Il2CppClass*);
+    using t_class_get_name         = const char*(*)(Il2CppClass*);
+    using t_type_get_name          = char*(*)(const Il2CppType*);
+    using t_object_unbox           = void*(*)(Il2CppObject*);
+    using t_value_box              = Il2CppObject*(*)(Il2CppClass*, void*);
+    using t_get_class_from_name    = Il2CppClass*(*)(const Il2CppImage*, const char*, const char*);
+
+    static t_get_method_from_name   s_get_method_from_name = nullptr;
+    static t_string_length          string_length = nullptr;
+    static t_string_chars           string_chars = nullptr;
+    static t_type_get_object        s_type_get_object = nullptr;
+    static t_string_new             s_string_new = nullptr;
+    static t_runtime_invoke         s_runtime_invoke = nullptr;
+    static t_class_get_field_from_name s_class_get_field_from_name = nullptr;
+    static t_object_get_class       s_object_get_class = nullptr;
+    static t_field_get_value        s_field_get_value = nullptr;
+    static t_field_set_value        s_field_set_value = nullptr;
+    static t_field_static_get_value s_field_static_get_value = nullptr;
+    static t_class_get_methods      s_class_get_methods = nullptr;
+    static t_class_get_namespace    s_class_get_namespace = nullptr;
+    static t_class_get_name         s_class_get_name = nullptr;
+    static t_type_get_name          s_type_get_name = nullptr;
+    static t_object_unbox           s_object_unbox = nullptr;
+    static t_value_box              s_value_box = nullptr;
+    static t_get_class_from_name    s_get_class_from_name = nullptr;
+
 
 
 static Il2CppClass* PhotonNetwork = nullptr;
@@ -719,26 +757,16 @@ static void DestroyAll()
 }
 
 typedef void(*orig_Update_t)(Il2CppObject*);
-
 orig_Update_t orig_Update = nullptr;
-
 void my_Update(Il2CppObject* self)
 {
-    NSLog(@"[Kitty] Update called");
-
     orig_Update(self);
 }
-
-
 static void InitHooks()
 {
-    NSLog(@"[Kitty] getting lateupdate");
-    auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
-    NSLog(@"[Kitty] got lateupdate");
-    orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
-    NSLog(@"[Kitty] set orig update");
-    m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
-    NSLog(@"[Kitty] hook installed");
+    //auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
+    //orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
+    //m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
 }
 
 static void CustomTick()
@@ -774,44 +802,6 @@ static void StartFramePump()
 }
 void initStuff(MemoryFileInfo framework)
 {
-    using t_get_method_from_name   = MethodInfo*(*)(Il2CppClass*, const char*, int);
-    using t_string_length          = int32_t(*)(Il2CppString*);
-    using t_string_chars           = Il2CppChar*(*)(Il2CppString*);
-    using t_type_get_object        = Il2CppObject*(*)(const Il2CppType*);
-    using t_string_new             = Il2CppString*(*)(const char*);
-    using t_runtime_invoke         = Il2CppObject*(*)(const MethodInfo*, void*, void**, Il2CppException**);
-    using t_class_get_field_from_name = FieldInfo*(*)(Il2CppClass*, const char*);
-    using t_object_get_class       = Il2CppClass*(*)(Il2CppObject*);
-    using t_field_get_value        = void(*)(Il2CppObject*, FieldInfo*, void*);
-    using t_field_set_value        = void(*)(Il2CppObject*, FieldInfo*, void*);
-    using t_field_static_get_value = void(*)(FieldInfo*, void*);
-    using t_class_get_methods      = const MethodInfo*(*)(Il2CppClass*, void**);
-    using t_class_get_namespace    = const char*(*)(Il2CppClass*);
-    using t_class_get_name         = const char*(*)(Il2CppClass*);
-    using t_type_get_name          = char*(*)(const Il2CppType*);
-    using t_object_unbox           = void*(*)(Il2CppObject*);
-    using t_value_box              = Il2CppObject*(*)(Il2CppClass*, void*);
-    using t_get_class_from_name    = Il2CppClass*(*)(const Il2CppImage*, const char*, const char*);
-
-    static t_get_method_from_name   s_get_method_from_name = nullptr;
-    static t_string_length          string_length = nullptr;
-    static t_string_chars           string_chars = nullptr;
-    static t_type_get_object        s_type_get_object = nullptr;
-    static t_string_new             s_string_new = nullptr;
-    static t_runtime_invoke         s_runtime_invoke = nullptr;
-    static t_class_get_field_from_name s_class_get_field_from_name = nullptr;
-    static t_object_get_class       s_object_get_class = nullptr;
-    static t_field_get_value        s_field_get_value = nullptr;
-    static t_field_set_value        s_field_set_value = nullptr;
-    static t_field_static_get_value s_field_static_get_value = nullptr;
-    static t_class_get_methods      s_class_get_methods = nullptr;
-    static t_class_get_namespace    s_class_get_namespace = nullptr;
-    static t_class_get_name         s_class_get_name = nullptr;
-    static t_type_get_name          s_type_get_name = nullptr;
-    static t_object_unbox           s_object_unbox = nullptr;
-    static t_value_box              s_value_box = nullptr;
-    static t_get_class_from_name    s_get_class_from_name = nullptr;
-
     auto domain_get      = (Il2CppDomain*(*)())KittyScanner::findSymbol(framework, "_il2cpp_domain_get");
     auto get_assemblies  = (Il2CppAssembly**(*)(const Il2CppDomain*, size_t*))KittyScanner::findSymbol(framework, "_il2cpp_domain_get_assemblies");
     auto get_image       = (Il2CppImage*(*)(const Il2CppAssembly*))KittyScanner::findSymbol(framework, "_il2cpp_assembly_get_image");
@@ -964,13 +954,7 @@ void initStuff(MemoryFileInfo framework)
         sleep(1);
     }
 
-    NSLog(@"[Kitty] getting lateupdate");
-    auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
-    NSLog(@"[Kitty] got lateupdate");
-    orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
-    NSLog(@"[Kitty] set orig update");
-    m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
-    NSLog(@"[Kitty] hook installed");
+    InitHooks();
 
 
     Il2CppException* ex = nullptr;
