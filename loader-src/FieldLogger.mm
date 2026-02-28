@@ -812,7 +812,7 @@ void initStuff(MemoryFileInfo framework)
     s_type_get_name             = (t_type_get_name)KittyScanner::findSymbol(framework, "_il2cpp_type_get_name");
     s_object_unbox              = (t_object_unbox)KittyScanner::findSymbol(framework, "_il2cpp_object_unbox");
     s_value_box                 = (t_value_box)KittyScanner::findSymbol(framework, "_il2cpp_value_box");
-    s_get_class_from_name       = (t_get_class_from_name)KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
+    s_get_class_from_name = (decltype(s_get_class_from_name))KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
 
     if (!domain_get || !get_assemblies || !get_image || !get_class_count || !get_class || !thread_attach ||
         !s_get_method_from_name || !string_length || !string_chars || !s_runtime_invoke)
@@ -940,13 +940,7 @@ void initStuff(MemoryFileInfo framework)
         sleep(1);
     }
 
-    NSLog(@"[Kitty] getting lateupdate");
-    auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
-    NSLog(@"[Kitty] got lateupdate");
-    orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
-    NSLog(@"[Kitty] set orig update");
-    m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
-    NSLog(@"[Kitty] hook installed");
+    InitHooks();
 
 
     Il2CppException* ex = nullptr;
