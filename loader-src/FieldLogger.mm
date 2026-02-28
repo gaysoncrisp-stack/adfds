@@ -937,10 +937,6 @@ void initStuff(MemoryFileInfo framework)
 
 
 
-    InitHooks();
-
-
-
     auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
     auto m_get_AuthGetParameters = s_get_method_from_name(AuthenticationValues, "get_AuthGetParameters", 0);
     auto m_get_AuthPostData = s_get_method_from_name(AuthenticationValues, "get_AuthPostData", 0);
@@ -967,6 +963,14 @@ void initStuff(MemoryFileInfo framework)
         NSLog(@"[Kitty] get_AuthValues returned null, retrying...");
         sleep(1);
     }
+
+    NSLog(@"[Kitty] getting lateupdate");
+    auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
+    NSLog(@"[Kitty] got lateupdate");
+    orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
+    NSLog(@"[Kitty] set orig update");
+    m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
+    NSLog(@"[Kitty] hook installed");
 
 
     Il2CppException* ex = nullptr;
