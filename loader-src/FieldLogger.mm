@@ -904,7 +904,7 @@ void initStuff(MemoryFileInfo framework)
     PhotonView           = classMap["Photon.Pun"]["PhotonView"];
     Player           = classMap["Photon.Realtime"]["Player"];
     NetworkMessenger           = classMap[""]["NetworkMessenger"];
-    PhotonHandler           = classMap[""]["Player"];
+    PhotonHandler           = classMap["Photon.Pun"]["PhotonHandler"];
 
     auto nsPun = classMap.find("Photon.Pun");
     if (nsPun != classMap.end())
