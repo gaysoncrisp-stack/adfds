@@ -628,6 +628,8 @@ static Il2CppClass* PhotonNetwork = nullptr;
 static Il2CppClass* PhotonView = nullptr;
 static Il2CppClass* Player = nullptr;
 static Il2CppClass* NetworkMessenger = nullptr;
+static Il2CppClass* PlayerYeeps = nullptr;
+
 
 static std::string ToStdString(Il2CppString* s) {
     return il2cpp_string_to_std(s, string_chars, string_length);
@@ -643,9 +645,6 @@ static std::string ObjToString(Il2CppObject* o) {
     auto str = (Il2CppString*)s_runtime_invoke(m, o, nullptr, &ex);
     if (ex || !str) return {};
     return ToStdString(str);
-}
-static void InitHooks()
-{
 }
 static void DeleteAll()
 {
@@ -719,7 +718,24 @@ static void DestroyAll()
     NSLog(@"[Kitty] destroyed all...");    
 }
 
+typedef void(*orig_Update_t)(Il2CppObject*);
 
+orig_Update_t orig_Update = nullptr;
+
+void my_Update(Il2CppObject* self)
+{
+    NSLog(@"[Kitty] Update called");
+
+    orig_Update(self);
+}
+
+
+static void InitHooks()
+{
+    auto m_LateUpdate = s_get_method_from_name(PlayerYeeps, "LateUpdate", 0);
+    orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
+    m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
+}
 
 static void CustomTick()
 { 
@@ -889,7 +905,7 @@ void initStuff(MemoryFileInfo framework)
     PhotonView           = classMap["Photon.Pun"]["PhotonView"];
     Player           = classMap["Photon.Realtime"]["Player"];
     NetworkMessenger           = classMap[""]["NetworkMessenger"];
-
+    PlayerYeeps           = classMap[""]["Player"];
 
     auto nsPun = classMap.find("Photon.Pun");
     if (nsPun != classMap.end())
@@ -919,6 +935,12 @@ void initStuff(MemoryFileInfo framework)
         NSLog(@"[Kitty] PhotonNetwork.get_AuthValues not found");
         return;
     }
+
+
+
+    InitHooks();
+
+
 
     auto m_toString = s_get_method_from_name(AuthenticationValues, "ToString", 0);
     auto m_get_AuthGetParameters = s_get_method_from_name(AuthenticationValues, "get_AuthGetParameters", 0);
