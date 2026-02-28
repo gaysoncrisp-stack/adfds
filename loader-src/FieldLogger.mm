@@ -628,7 +628,7 @@ static Il2CppClass* PhotonNetwork = nullptr;
 static Il2CppClass* PhotonView = nullptr;
 static Il2CppClass* Player = nullptr;
 static Il2CppClass* NetworkMessenger = nullptr;
-static Il2CppClass* PlayerYeeps = nullptr;
+static Il2CppClass* PhotonHandler = nullptr;
 
 
 static std::string ToStdString(Il2CppString* s) {
@@ -732,18 +732,17 @@ void my_Update(Il2CppObject* self)
 
 static void InitHooks()
 {
-    auto m_LateUpdate = s_get_method_from_name(PlayerYeeps, "LateUpdate", 0);
+    NSLog(@"[Kitty] getting lateupdate");
+    auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
+    NSLog(@"[Kitty] got lateupdate");
     orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
+    NSLog(@"[Kitty] set orig update");
     m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
+    NSLog(@"[Kitty] hook installed");
 }
 
 static void CustomTick()
 { 
-    if (!g_threadAttached && g_thread_attach && g_domain)
-    {
-        g_thread_attach(g_domain);
-        g_threadAttached = true;
-    }
     if (g_cfgDestroyAll.load())
     {
         NSLog(@"[Kitty] destroyed all called");
@@ -905,7 +904,7 @@ void initStuff(MemoryFileInfo framework)
     PhotonView           = classMap["Photon.Pun"]["PhotonView"];
     Player           = classMap["Photon.Realtime"]["Player"];
     NetworkMessenger           = classMap[""]["NetworkMessenger"];
-    PlayerYeeps           = classMap[""]["Player"];
+    PhotonHandler           = classMap[""]["Player"];
 
     auto nsPun = classMap.find("Photon.Pun");
     if (nsPun != classMap.end())
