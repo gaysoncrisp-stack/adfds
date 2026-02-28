@@ -318,7 +318,11 @@ static MethodInfo*   (*s_get_method_from_name)(Il2CppClass*, const char*, int) =
 static Il2CppObject* (*s_type_get_object)(const Il2CppType*) = nullptr;
 static Il2CppObject* (*s_runtime_invoke)(const MethodInfo*, void*, void**, Il2CppException**) = nullptr;
 static Il2CppObject* (*s_value_box)(Il2CppClass*, void*) = nullptr;
-static Il2CppClass*  (*s_get_class_from_name)(const char*, const char*) = nullptr;
+static Il2CppClass* (*s_get_class_from_name)(
+    const Il2CppImage*,
+    const char*,
+    const char*
+) = nullptr;
 using t_class_get_methods   = const MethodInfo*(*)(Il2CppClass*, void**);
 using t_class_get_namespace = const char*(*)(Il2CppClass*);
 using t_class_get_name      = const char*(*)(Il2CppClass*);
@@ -780,10 +784,8 @@ void initStuff(MemoryFileInfo framework)
     using t_class_get_methods      = const MethodInfo*(*)(Il2CppClass*, void**);
     using t_class_get_namespace    = const char*(*)(Il2CppClass*);
     using t_class_get_name         = const char*(*)(Il2CppClass*);
-    using t_type_get_name          = char*(*)(const Il2CppType*);
     using t_object_unbox           = void*(*)(Il2CppObject*);
     using t_value_box              = Il2CppObject*(*)(Il2CppClass*, void*);
-    using t_get_class_from_name    = Il2CppClass*(*)(const Il2CppImage*, const char*, const char*);
 
 
     auto domain_get      = (Il2CppDomain*(*)())KittyScanner::findSymbol(framework, "_il2cpp_domain_get");
