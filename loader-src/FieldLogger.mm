@@ -848,7 +848,12 @@ void my_RpcCreateItem(
 
 static void InitHooks()
 {
-    auto m_RpcCreateItem = s_get_method_from_name(NetworkMessenger, "RpcCreateItem", 12);
+    if(!NetworkMessenger)
+    {
+         NSLog(@"[Kitty] NetworkMessenger not found");
+        return;
+    }
+    auto m_RpcCreateItem = s_get_method_from_name(NetworkMessenger, "RpcCreateItem");
     if (!m_RpcCreateItem)
     {
         NSLog(@"[Kitty] RpcCreateItem method not found");
