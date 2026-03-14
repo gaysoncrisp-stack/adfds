@@ -807,24 +807,26 @@ void my_RpcCreateItem(
     uint64_t info3
 )
 {
-    NSLog(@"[Kitty] RpcCreateItem called");
-    NSLog(@"[Kitty] self: %p", self);
-    NSLog(@"[Kitty] arg1 string: %@", NSStr(a1));
-    NSLog(@"[Kitty] arg2 string: %@", NSStr(a2));
-    NSLog(@"[Kitty] arg3 raw: 0x%llX", (unsigned long long)a3);
-    NSLog(@"[Kitty] arg4 string: %@", NSStr(a4));
-    NSLog(@"[Kitty] arg5 Vector3: %@", DumpVec3(a5));
-    NSLog(@"[Kitty] arg6 Quaternion: %@", DumpQuat(a6));
-    NSLog(@"[Kitty] arg7 Vector3: %@", DumpVec3(a7));
-    NSLog(@"[Kitty] arg8 Vector3: %@", DumpVec3(a8));
-    NSLog(@"[Kitty] arg9 string[]: %@", DumpStringArray(a9));
-    NSLog(@"[Kitty] arg10 byte: %u", (unsigned)a10);
-    NSLog(@"[Kitty] arg11 byte: %u", (unsigned)a11);
-    NSLog(@"[Kitty] PhotonMessageInfo raw: %016llX %016llX %016llX %016llX",
-          (unsigned long long)info0,
-          (unsigned long long)info1,
-          (unsigned long long)info2,
-          (unsigned long long)info3);
+    KITTY_LOGI("[Kitty] RpcCreateItem called");
+    KITTY_LOGI("[Kitty] self => %{public}p", self);
+    KITTY_LOGI("[Kitty] arg1 => %{public}s", SafeIl2CppStr(a1));
+    KITTY_LOGI("[Kitty] arg2 => %{public}s", SafeIl2CppStr(a2));
+    KITTY_LOGI("[Kitty] arg3 => 0x%{public}llX", (unsigned long long)a3);
+    KITTY_LOGI("[Kitty] arg4 => %{public}s", SafeIl2CppStr(a4));
+    KITTY_LOGI("[Kitty] arg5 => %{public}s", v5.c_str());
+    KITTY_LOGI("[Kitty] arg6 => %{public}s", q6.c_str());
+    KITTY_LOGI("[Kitty] arg7 => %{public}s", v7.c_str());
+    KITTY_LOGI("[Kitty] arg8 => %{public}s", v8.c_str());
+    KITTY_LOGI("[Kitty] arg9 => %{public}s", arr9.c_str());
+    KITTY_LOGI("[Kitty] arg10 => %{public}u", (unsigned)a10);
+    KITTY_LOGI("[Kitty] arg11 => %{public}u", (unsigned)a11);
+    KITTY_LOGI(
+        "[Kitty] PhotonMessageInfo raw => %{public}016llX %{public}016llX %{public}016llX %{public}016llX",
+        (unsigned long long)info0,
+        (unsigned long long)info1,
+        (unsigned long long)info2,
+        (unsigned long long)info3
+    );
 
     orig_RpcCreateItem(
         self,
