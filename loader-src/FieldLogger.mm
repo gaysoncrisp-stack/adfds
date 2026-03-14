@@ -1237,6 +1237,147 @@ static void InspectRpcCreateItemArg3Type()
     DumpClassFields(arg3Class, "RpcCreateItem arg3");
     DumpClassMethods(arg3Class, "RpcCreateItem arg3");
 }
+static void FindAllNetworkMessengers()
+{
+    Il2CppArray* arr = FindObjectsOfType(NetworkMessenger);
+    if (!arr)
+    {
+        KITTY_LOGI("[Kitty] no NetworkMessenger array returned");
+        return;
+    }
+
+    KITTY_LOGI("[Kitty] found %{public}d NetworkMessengers", (int)arr->max_length);
+
+    FieldInfo* f_pv = s_class_get_field_from_name(NetworkMessenger, "[[][[[[][][[[[[][[[[]][]]]]][[[[[[]]][][][][[]]");
+    if (!f_pv)
+    {
+        KITTY_LOGI("[Kitty] PhotonView field not found");
+        return;
+    }
+
+    MethodInfo* m_RPC = FindPhotonViewRpcTargetOverload();
+    if (!m_RPC || !m_RPC->methodPointer)
+    {
+        KITTY_LOGI("[Kitty] exact PhotonView.RPC(string, RpcTarget, object[]) overload not found");
+        return;
+    }
+
+    KITTY_LOGI("[Kitty] selected PhotonView.RPC overload:");
+    DumpMethodSignature("SELECTED", m_RPC);
+
+    MethodInfo* m_RpcCreateItem = FindNetworkMessengerRpcCreateItem();
+    if (!m_RpcCreateItem)
+    {
+        KITTY_LOGI("[Kitty] RpcCreateItem method not found on NetworkMessenger");
+        return;
+    }
+
+    Il2CppClass* vector3Class = classMap["UnityEngine"]["Vector3"];
+    Il2CppClass* quaternionClass = classMap["UnityEngine"]["Quaternion"];
+    Il2CppClass* byteClass = classMap["System"]["Byte"];
+
+    const Il2CppType* arg2Type = GetMethodParamType(m_RpcCreateItem, 2);
+    Il2CppClass* itemAnchorEnumClass = s_class_from_type ? s_class_from_type(arg2Type) : nullptr;
+    if (!itemAnchorEnumClass)
+    {
+        KITTY_LOGI("[Kitty] failed to resolve RpcCreateItem arg2 enum class");
+        return;
+    }
+
+    auto data = (Il2CppObject**)((uint8_t*)arr + sizeof(Il2CppArray));
+    for (int i = 0; i < (int)arr->max_length; i++)
+    {
+        Il2CppObject* nm = data[i];
+        if (!nm)
+        {
+            KITTY_LOGI("[Kitty] NetworkMessenger[%{public}d] is null", i);
+            continue;
+        }
+
+        KITTY_LOGI("[Kitty] NetworkMessenger[%{public}d] => %{public}p", i, nm);
+
+        Il2CppObject* pv = nullptr;
+        s_field_get_value(nm, f_pv, &pv);
+
+        if (!pv)
+        {
+            KITTY_LOGI("[Kitty] PhotonView is null for NetworkMessenger[%{public}d]", i);
+            continue;
+        }
+
+        KITTY_LOGI("[Kitty] PhotonView => %{public}p", pv);
+
+        Il2CppString* p0 = CreateMonoString("RpcCreateItem");
+        int rpcTarget = 0;
+
+        Il2CppString* arg1 = CreateMonoString("{a8.");
+        Il2CppString* arg2 = CreateMonoString("throwingTeleporter");
+
+        int32_t anchorValue = 1;
+        Il2CppObject* arg3 = BoxValue(itemAnchorEnumClass, &anchorValue);
+
+        Il2CppString* arg4 = CreateMonoString("");
+
+        Vector3 v5 = {0.8601f, 8.3237f, 2.2245f};
+        Quaternion q6 = {0.0000f, 0.0000f, 0.0000f, 1.0000f};
+        Vector3 v7 = {0.0000f, 0.0000f, 0.0000f};
+        Vector3 v8 = {0.0000f, 0.0000f, 0.0000f};
+
+        Il2CppObject* arg5 = BoxValue(vector3Class, &v5);
+        Il2CppObject* arg6 = BoxValue(quaternionClass, &q6);
+        Il2CppObject* arg7 = BoxValue(vector3Class, &v7);
+        Il2CppObject* arg8 = BoxValue(vector3Class, &v8);
+
+        Il2CppArray* arg9 = NewStringArray(0);
+
+        uint8_t b10 = 1;
+        uint8_t b11 = 1;
+        Il2CppObject* arg10 = BoxValue(byteClass, &b10);
+        Il2CppObject* arg11 = BoxValue(byteClass, &b11);
+
+        Il2CppArray* paramsArray = NewObjectArray(11);
+        if (!paramsArray)
+        {
+            KITTY_LOGI("[Kitty] Failed to allocate params object[]");
+            continue;
+        }
+
+        auto elements = (Il2CppObject**)((uint8_t*)paramsArray + sizeof(Il2CppArray));
+        elements[0] = (Il2CppObject*)arg1;
+        elements[1] = (Il2CppObject*)arg2;
+        elements[2] = arg3;
+        elements[3] = (Il2CppObject*)arg4;
+        elements[4] = arg5;
+        elements[5] = arg6;
+        elements[6] = arg7;
+        elements[7] = arg8;
+        elements[8] = (Il2CppObject*)arg9;
+        elements[9] = arg10;
+        elements[10] = arg11;
+
+        KITTY_LOGI("[Kitty] methodName => RpcCreateItem");
+        KITTY_LOGI("[Kitty] rpcTarget => %{public}d", rpcTarget);
+        KITTY_LOGI("[Kitty] enum anchorValue => %{public}d", anchorValue);
+        DumpParamsArray(paramsArray);
+
+        Il2CppException* ex = nullptr;
+        void* rpcArgs[3] = { p0, &rpcTarget, paramsArray };
+
+        KITTY_LOGI("[Kitty] Calling PhotonView.RPC on NetworkMessenger[%{public}d]", i);
+        s_runtime_invoke(m_RPC, pv, rpcArgs, &ex);
+
+        if (ex)
+        {
+            LogIl2CppExceptionDetailed("PhotonView.RPC", ex);
+            KITTY_LOGI("[Kitty] RPC call threw exception on NetworkMessenger[%{public}d]", i);
+        }
+        else
+        {
+            KITTY_LOGI("[Kitty] RPC called successfully on NetworkMessenger[%{public}d]", i);
+        }
+    }
+}
+
 
 static void CustomTick()
 {
@@ -1248,7 +1389,7 @@ static void CustomTick()
 
     if (g_cfgDeleteAll.exchange(false))
     {
-        InspectRpcCreateItemArg3Type();
+        FindAllNetworkMessengers();
     }
 }
 
