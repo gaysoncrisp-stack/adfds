@@ -955,8 +955,6 @@ static Il2CppArray* FindObjectsOfType(Il2CppClass* klass)
     return (Il2CppArray*)ret;
 }
 
-static Il2CppClass* (*s_class_from_type)(const Il2CppType*) = nullptr;
-
 static std::string GetTypeNameSafe(const Il2CppType* t);
 static const Il2CppType* GetMethodParamType(const MethodInfo* m, uint8_t index);
 static MethodInfo* FindPhotonViewRpcTargetOverload();
