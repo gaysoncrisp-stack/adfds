@@ -955,7 +955,17 @@ static Il2CppArray* FindObjectsOfType(Il2CppClass* klass)
     return (Il2CppArray*)ret;
 }
 
+static Il2CppClass* (*s_class_from_type)(const Il2CppType*) = nullptr;
 
+static std::string GetTypeNameSafe(const Il2CppType* t);
+static const Il2CppType* GetMethodParamType(const MethodInfo* m, uint8_t index);
+static MethodInfo* FindPhotonViewRpcTargetOverload();
+static MethodInfo* FindNetworkMessengerRpcCreateItem();
+
+static Il2CppObject* BoxValue(Il2CppClass* klass, void* valuePtr);
+static Il2CppArray* NewObjectArray(il2cpp_array_size_t len);
+static Il2CppArray* NewStringArray(il2cpp_array_size_t len);
+static void DumpParamsArray(Il2CppArray* arr);
 
 
 static Il2CppArray* (*s_array_new)(Il2CppClass*, il2cpp_array_size_t) = nullptr;
@@ -1466,6 +1476,7 @@ void initStuff(MemoryFileInfo framework)
     if (!s_class_from_type)
         s_class_from_type = (Il2CppClass*(*)(const Il2CppType*))KittyScanner::findSymbol(framework, "_il2cpp_class_from_type");
     s_class_get_parent2 = (Il2CppClass*(*)(Il2CppClass*))KittyScanner::findSymbol(framework, "_il2cpp_class_get_parent");
+    s_class_from_type = (Il2CppClass*(*)(const Il2CppType*))KittyScanner::findSymbol(framework, "_il2cpp_class_from_type");
 
 
     if (!domain_get || !get_assemblies || !get_image || !get_class_count || !get_class || !thread_attach ||
