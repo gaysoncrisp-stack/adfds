@@ -766,7 +766,47 @@ static NSString* DumpStringArray(Il2CppArray* arr)
     [out appendString:@"]"];
     return out;
 }
+static const char* SafeUtf8(NSString* s)
+{
+    return s ? [s UTF8String] : "<null>";
+}
 
+static const char* SafeIl2CppStr(Il2CppString* s)
+{
+    return SafeUtf8(NSStr(s));
+}
+
+static std::string Vec3Str(const Vector3& v)
+{
+    char buf[128];
+    snprintf(buf, sizeof(buf), "(%.4f, %.4f, %.4f)", v.x, v.y, v.z);
+    return std::string(buf);
+}
+
+static std::string QuatStr(const Quaternion& q)
+{
+    char buf[160];
+    snprintf(buf, sizeof(buf), "(%.4f, %.4f, %.4f, %.4f)", q.x, q.y, q.z, q.w);
+    return std::string(buf);
+}
+
+static std::string DumpStringArrayCpp(Il2CppArray* arr)
+{
+    if (!arr) return "<null>";
+
+    std::string out = "[";
+    auto data = (Il2CppString**)((uint8_t*)arr + sizeof(Il2CppArray));
+
+    for (uintptr_t i = 0; i < arr->max_length; i++)
+    {
+        out += SafeIl2CppStr(data[i]);
+        if (i + 1 < arr->max_length)
+            out += ", ";
+    }
+
+    out += "]";
+    return out;
+}
 typedef void(*orig_RpcCreateItem_t)(
     Il2CppObject* self,
     Il2CppString* a1,
@@ -807,6 +847,12 @@ void my_RpcCreateItem(
     uint64_t info3
 )
 {
+    std::string v5 = Vec3Str(a5);
+    std::string q6 = QuatStr(a6);
+    std::string v7 = Vec3Str(a7);
+    std::string v8 = Vec3Str(a8);
+    std::string arr9 = DumpStringArrayCpp(a9);
+
     KITTY_LOGI("[Kitty] RpcCreateItem called");
     KITTY_LOGI("[Kitty] self => %{public}p", self);
     KITTY_LOGI("[Kitty] arg1 => %{public}s", SafeIl2CppStr(a1));
