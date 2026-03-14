@@ -954,8 +954,18 @@ static Il2CppArray* FindObjectsOfType(Il2CppClass* klass)
 
     return (Il2CppArray*)ret;
 }
+
+
+
+
 static Il2CppArray* (*s_array_new)(Il2CppClass*, il2cpp_array_size_t) = nullptr;
- 
+static FieldInfo* (*s_class_get_fields)(Il2CppClass*, void**) = nullptr;
+static const char* (*s_field_get_name2)(FieldInfo*) = nullptr;
+static const Il2CppType* (*s_field_get_type2)(FieldInfo*) = nullptr;
+static int32_t (*s_field_get_offset2)(FieldInfo*) = nullptr;
+static Il2CppClass* (*s_class_from_type)(const Il2CppType*) = nullptr;
+static Il2CppClass* (*s_class_get_parent2)(Il2CppClass*) = nullptr;
+
 static void LogIl2CppExceptionDetailed(const char* where, Il2CppException* ex)
 {
     if (!ex)
@@ -994,6 +1004,7 @@ static void LogIl2CppExceptionDetailed(const char* where, Il2CppException* ex)
     KITTY_LOGI("[Kitty] %s exception message => %{public}s", where, exMsg.empty() ? "<none>" : exMsg.c_str());
     KITTY_LOGI("[Kitty] %s exception tostring => %{public}s", where, exToStr.empty() ? "<none>" : exToStr.c_str());
 }
+
 static std::string GetTypeNameSafe(const Il2CppType* t)
 {
     if (!t || !s_type_get_name) return "<null>";
@@ -1023,7 +1034,6 @@ static void DumpMethodSignature(const char* prefix, const MethodInfo* m)
     {
         const Il2CppType* pType = GetMethodParamType(m, i);
         sig += GetTypeNameSafe(pType);
-
         if (i + 1 < m->parameters_count)
             sig += ", ";
     }
@@ -1084,199 +1094,164 @@ static MethodInfo* FindNetworkMessengerRpcCreateItem()
 
     return found;
 }
-static Il2CppObject* BoxValue(Il2CppClass* klass, void* valuePtr)
+static void DumpClassHeader(Il2CppClass* klass, const char* tag)
 {
-    if (!klass || !s_value_box) return nullptr;
-    return s_value_box(klass, valuePtr);
-}
-static Il2CppArray* NewObjectArray(il2cpp_array_size_t len)
-{
-    Il2CppClass* objectClass = classMap["System"]["Object"];
-    if (!objectClass || !s_array_new) return nullptr;
-    return s_array_new(objectClass, len);
-}
-static Il2CppArray* NewStringArray(il2cpp_array_size_t len)
-{
-    Il2CppClass* stringClass = classMap["System"]["String"];
-    if (!stringClass || !s_array_new) return nullptr;
-    return s_array_new(stringClass, len);
-}
-static void DumpParamsArray(Il2CppArray* arr)
-{
-    if (!arr)
+    if (!klass)
     {
-        KITTY_LOGI("[Kitty] paramsArray => null");
+        KITTY_LOGI("[Kitty] %s class => null", tag);
         return;
     }
 
-    KITTY_LOGI("[Kitty] paramsArray length => %{public}d", (int)arr->max_length);
+    const char* ns = s_class_get_namespace ? s_class_get_namespace(klass) : "";
+    const char* name = s_class_get_name ? s_class_get_name(klass) : "";
 
-    auto elems = (Il2CppObject**)((uint8_t*)arr + sizeof(Il2CppArray));
-    for (int i = 0; i < (int)arr->max_length; i++)
+    KITTY_LOGI("[Kitty] %s class => %{public}s.%{public}s (%{public}p)",
+               tag, ns ? ns : "", name ? name : "", klass);
+
+    if (s_class_get_parent2)
     {
-        Il2CppObject* obj = elems[i];
-        if (!obj)
+        Il2CppClass* parent = s_class_get_parent2(klass);
+        if (parent)
         {
-            KITTY_LOGI("[Kitty] params[%{public}d] => null", i);
-            continue;
+            const char* pns = s_class_get_namespace ? s_class_get_namespace(parent) : "";
+            const char* pname = s_class_get_name ? s_class_get_name(parent) : "";
+            KITTY_LOGI("[Kitty] %s parent => %{public}s.%{public}s (%{public}p)",
+                       tag, pns ? pns : "", pname ? pname : "", parent);
         }
-
-        Il2CppClass* k = s_object_get_class ? s_object_get_class(obj) : nullptr;
-        const char* ns = k && s_class_get_namespace ? s_class_get_namespace(k) : "";
-        const char* name = k && s_class_get_name ? s_class_get_name(k) : "";
-        std::string toStr = ObjToString(obj);
-
-        KITTY_LOGI("[Kitty] params[%{public}d] type => %{public}s.%{public}s",
-                   i, ns ? ns : "", name ? name : "");
-        KITTY_LOGI("[Kitty] params[%{public}d] tostring => %{public}s",
-                   i, toStr.empty() ? "<none>" : toStr.c_str());
     }
 }
-static void FindAllNetworkMessengers()
+static void DumpClassFields(Il2CppClass* klass, const char* tag)
 {
-    Il2CppArray* arr = FindObjectsOfType(NetworkMessenger);
-    if (!arr)
+    if (!klass || !s_class_get_fields)
     {
-        KITTY_LOGI("[Kitty] no NetworkMessenger array returned");
+        KITTY_LOGI("[Kitty] %s fields => unavailable", tag);
         return;
     }
 
-    KITTY_LOGI("[Kitty] found %{public}d NetworkMessengers", (int)arr->max_length);
+    void* iter = nullptr;
+    FieldInfo* f = nullptr;
+    int count = 0;
 
-    FieldInfo* f_pv = s_class_get_field_from_name(NetworkMessenger, "[[][[[[][][[[[[][[[[]][]]]]][[[[[[]]][][][][[]]");
-    if (!f_pv)
+    while ((f = s_class_get_fields(klass, &iter)))
     {
-        KITTY_LOGI("[Kitty] PhotonView field not found");
+        const char* fieldName = s_field_get_name2 ? s_field_get_name2(f) : "<unknown>";
+        const Il2CppType* fieldType = s_field_get_type2 ? s_field_get_type2(f) : nullptr;
+        int32_t fieldOffset = s_field_get_offset2 ? s_field_get_offset2(f) : -1;
+
+        KITTY_LOGI("[Kitty] %s field[%{public}d] => %{public}s | type=%{public}s | offset=0x%X",
+                   tag,
+                   count,
+                   fieldName ? fieldName : "<null>",
+                   GetTypeNameSafe(fieldType).c_str(),
+                   (unsigned int)fieldOffset);
+        count++;
+    }
+
+    KITTY_LOGI("[Kitty] %s total fields => %{public}d", tag, count);
+}
+static void DumpClassMethods(Il2CppClass* klass, const char* tag)
+{
+    if (!klass || !s_class_get_methods)
+    {
+        KITTY_LOGI("[Kitty] %s methods => unavailable", tag);
         return;
     }
 
+    void* iter = nullptr;
+    const MethodInfo* m = nullptr;
+    int count = 0;
+
+    while ((m = (const MethodInfo*)s_class_get_methods(klass, &iter)))
+    {
+        DumpMethodSignature(tag, m);
+        count++;
+    }
+
+    KITTY_LOGI("[Kitty] %s total methods => %{public}d", tag, count);
+}
+static void InspectRpcCreateItemArg3Type()
+{
     MethodInfo* m_RPC = FindPhotonViewRpcTargetOverload();
-    if (!m_RPC || !m_RPC->methodPointer)
+    if (m_RPC)
     {
-        KITTY_LOGI("[Kitty] exact PhotonView.RPC(string, RpcTarget, object[]) overload not found");
-        return;
+        KITTY_LOGI("[Kitty] selected PhotonView.RPC overload:");
+        DumpMethodSignature("SELECTED", m_RPC);
     }
-
-    KITTY_LOGI("[Kitty] selected PhotonView.RPC overload:");
-    DumpMethodSignature("SELECTED", m_RPC);
+    else
+    {
+        KITTY_LOGI("[Kitty] PhotonView.RPC(string, RpcTarget, object[]) overload not found");
+    }
 
     MethodInfo* m_RpcCreateItem = FindNetworkMessengerRpcCreateItem();
     if (!m_RpcCreateItem)
     {
         KITTY_LOGI("[Kitty] RpcCreateItem method not found on NetworkMessenger");
+        return;
     }
 
-    Il2CppClass* vector3Class = classMap["UnityEngine"]["Vector3"];
-    Il2CppClass* quaternionClass = classMap["UnityEngine"]["Quaternion"];
-    Il2CppClass* byteClass = classMap["System"]["Byte"];
-    Il2CppClass* intPtrClass = classMap["System"]["IntPtr"];
-
-    auto data = (Il2CppObject**)((uint8_t*)arr + sizeof(Il2CppArray));
-    for (int i = 0; i < (int)arr->max_length; i++)
+    if (m_RpcCreateItem->parameters_count < 12)
     {
-        Il2CppObject* nm = data[i];
-        if (!nm)
-        {
-            KITTY_LOGI("[Kitty] NetworkMessenger[%{public}d] is null", i);
-            continue;
-        }
-
-        KITTY_LOGI("[Kitty] NetworkMessenger[%{public}d] => %{public}p", i, nm);
-
-        Il2CppObject* pv = nullptr;
-        s_field_get_value(nm, f_pv, &pv);
-
-        if (!pv)
-        {
-            KITTY_LOGI("[Kitty] PhotonView is null for NetworkMessenger[%{public}d]", i);
-            continue;
-        }
-
-        KITTY_LOGI("[Kitty] PhotonView => %{public}p", pv);
-
-        Il2CppString* p0 = CreateMonoString("RpcCreateItem");
-        int rpcTarget = 0;
-
-        Il2CppString* arg1 = CreateMonoString("{a8.");
-        Il2CppString* arg2 = CreateMonoString("throwingTeleporter");
-
-        uintptr_t arg3Raw = 0;
-        Il2CppObject* arg3 = BoxValue(intPtrClass, &arg3Raw);
-
-        Il2CppString* arg4 = nullptr;
-
-        Vector3 v5 = {0.8601f, 8.3237f, 2.2245f};
-        Quaternion q6 = {0.0000f, 0.0000f, 0.0000f, 1.0000f};
-        Vector3 v7 = {0.0000f, 0.0000f, 0.0000f};
-        Vector3 v8 = {0.0000f, 0.0000f, 0.0000f};
-
-        Il2CppObject* arg5 = BoxValue(vector3Class, &v5);
-        Il2CppObject* arg6 = BoxValue(quaternionClass, &q6);
-        Il2CppObject* arg7 = BoxValue(vector3Class, &v7);
-        Il2CppObject* arg8 = BoxValue(vector3Class, &v8);
-
-        Il2CppArray* arg9 = NewStringArray(0);
-
-        uint8_t b10 = 1;
-        uint8_t b11 = 1;
-        Il2CppObject* arg10 = BoxValue(byteClass, &b10);
-        Il2CppObject* arg11 = BoxValue(byteClass, &b11);
-
-        Il2CppArray* paramsArray = NewObjectArray(11);
-        if (!paramsArray)
-        {
-            KITTY_LOGI("[Kitty] Failed to allocate params object[]");
-            continue;
-        }
-
-        auto elements = (Il2CppObject**)((uint8_t*)paramsArray + sizeof(Il2CppArray));
-        elements[0] = (Il2CppObject*)arg1;
-        elements[1] = (Il2CppObject*)arg2;
-        elements[2] = arg3;
-        elements[3] = (Il2CppObject*)arg4;
-        elements[4] = arg5;
-        elements[5] = arg6;
-        elements[6] = arg7;
-        elements[7] = arg8;
-        elements[8] = (Il2CppObject*)arg9;
-        elements[9] = arg10;
-        elements[10] = arg11;
-
-        KITTY_LOGI("[Kitty] methodName => RpcCreateItem");
-        KITTY_LOGI("[Kitty] rpcTarget => %{public}d", rpcTarget);
-        DumpParamsArray(paramsArray);
-
-        Il2CppException* ex = nullptr;
-        void* rpcArgs[3] = { p0, &rpcTarget, paramsArray };
-
-        KITTY_LOGI("[Kitty] Calling PhotonView.RPC on NetworkMessenger[%{public}d]", i);
-        s_runtime_invoke(m_RPC, pv, rpcArgs, &ex);
-
-        if (ex)
-        {
-            LogIl2CppExceptionDetailed("PhotonView.RPC", ex);
-            KITTY_LOGI("[Kitty] RPC call threw exception on NetworkMessenger[%{public}d]", i);
-        }
-        else
-        {
-            KITTY_LOGI("[Kitty] RPC called successfully on NetworkMessenger[%{public}d]", i);
-        }
+        KITTY_LOGI("[Kitty] RpcCreateItem parameter count too small => %{public}d", (int)m_RpcCreateItem->parameters_count);
+        return;
     }
+
+    const Il2CppType* arg0Type = GetMethodParamType(m_RpcCreateItem, 0);
+    const Il2CppType* arg1Type = GetMethodParamType(m_RpcCreateItem, 1);
+    const Il2CppType* arg2Type = GetMethodParamType(m_RpcCreateItem, 2);
+    const Il2CppType* arg3Type = GetMethodParamType(m_RpcCreateItem, 3);
+    const Il2CppType* arg4Type = GetMethodParamType(m_RpcCreateItem, 4);
+    const Il2CppType* arg5Type = GetMethodParamType(m_RpcCreateItem, 5);
+    const Il2CppType* arg6Type = GetMethodParamType(m_RpcCreateItem, 6);
+    const Il2CppType* arg7Type = GetMethodParamType(m_RpcCreateItem, 7);
+    const Il2CppType* arg8Type = GetMethodParamType(m_RpcCreateItem, 8);
+    const Il2CppType* arg9Type = GetMethodParamType(m_RpcCreateItem, 9);
+    const Il2CppType* arg10Type = GetMethodParamType(m_RpcCreateItem, 10);
+    const Il2CppType* arg11Type = GetMethodParamType(m_RpcCreateItem, 11);
+
+    KITTY_LOGI("[Kitty] RpcCreateItem param[0] => %{public}s", GetTypeNameSafe(arg0Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[1] => %{public}s", GetTypeNameSafe(arg1Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[2] => %{public}s", GetTypeNameSafe(arg2Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[3] => %{public}s", GetTypeNameSafe(arg3Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[4] => %{public}s", GetTypeNameSafe(arg4Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[5] => %{public}s", GetTypeNameSafe(arg5Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[6] => %{public}s", GetTypeNameSafe(arg6Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[7] => %{public}s", GetTypeNameSafe(arg7Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[8] => %{public}s", GetTypeNameSafe(arg8Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[9] => %{public}s", GetTypeNameSafe(arg9Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[10] => %{public}s", GetTypeNameSafe(arg10Type).c_str());
+    KITTY_LOGI("[Kitty] RpcCreateItem param[11] => %{public}s", GetTypeNameSafe(arg11Type).c_str());
+
+    if (!s_class_from_type)
+    {
+        KITTY_LOGI("[Kitty] s_class_from_type not resolved");
+        return;
+    }
+
+    Il2CppClass* arg2Class = s_class_from_type(arg2Type);
+    DumpClassHeader(arg2Class, "RpcCreateItem arg2");
+    DumpClassFields(arg2Class, "RpcCreateItem arg2");
+    DumpClassMethods(arg2Class, "RpcCreateItem arg2");
+
+    Il2CppClass* arg3Class = s_class_from_type(arg3Type);
+    DumpClassHeader(arg3Class, "RpcCreateItem arg3");
+    DumpClassFields(arg3Class, "RpcCreateItem arg3");
+    DumpClassMethods(arg3Class, "RpcCreateItem arg3");
 }
 
-
 static void CustomTick()
-{ 
-    if (g_cfgDestroyAll.load())
+{
+    if (g_cfgDestroyAll.exchange(false))
     {
         NSLog(@"[Kitty] destroyed all called");
         DestroyAll();
     }
-    if (g_cfgDeleteAll.load())
+
+    if (g_cfgDeleteAll.exchange(false))
     {
-        FindAllNetworkMessengers();
+        InspectRpcCreateItemArg3Type();
     }
 }
+
 
 @interface ACFramePump (Tick)
 - (void)onFrame:(CADisplayLink*)link;
@@ -1342,6 +1317,15 @@ void initStuff(MemoryFileInfo framework)
     s_value_box                 = (t_value_box)KittyScanner::findSymbol(framework, "_il2cpp_value_box");
     s_get_class_from_name = (decltype(s_get_class_from_name))KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
     s_array_new = (Il2CppArray*(*)(Il2CppClass*, il2cpp_array_size_t))KittyScanner::findSymbol(framework, "_il2cpp_array_new");
+    s_class_get_fields = (FieldInfo*(*)(Il2CppClass*, void**))KittyScanner::findSymbol(framework, "_il2cpp_class_get_fields");
+    s_field_get_name2 = (const char*(*)(FieldInfo*))KittyScanner::findSymbol(framework, "_il2cpp_field_get_name");
+    s_field_get_type2 = (const Il2CppType*(*)(FieldInfo*))KittyScanner::findSymbol(framework, "_il2cpp_field_get_type");
+    s_field_get_offset2 = (int32_t(*)(FieldInfo*))KittyScanner::findSymbol(framework, "_il2cpp_field_get_offset");
+    s_class_from_type = (Il2CppClass*(*)(const Il2CppType*))KittyScanner::findSymbol(framework, "_il2cpp_class_from_il2cpp_type");
+    if (!s_class_from_type)
+        s_class_from_type = (Il2CppClass*(*)(const Il2CppType*))KittyScanner::findSymbol(framework, "_il2cpp_class_from_type");
+    s_class_get_parent2 = (Il2CppClass*(*)(Il2CppClass*))KittyScanner::findSymbol(framework, "_il2cpp_class_get_parent");
+
 
     if (!domain_get || !get_assemblies || !get_image || !get_class_count || !get_class || !thread_attach ||
         !s_get_method_from_name || !string_length || !string_chars || !s_runtime_invoke)
