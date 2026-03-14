@@ -652,7 +652,6 @@ static std::string ObjToString(Il2CppObject* o) {
 }
 static void DeleteAll()
 {
-    
     Il2CppException* ex = nullptr;
 
     FieldInfo* f_pv   = s_class_get_field_from_name(NetworkMessenger, "][[][]]][[]]][[][]][][][[][[[]][]][[[[][]]][]]]");
@@ -730,11 +729,133 @@ void my_Update(Il2CppObject* self)
 
     orig_Update(self);
 }
+
+static NSString* NSStr(Il2CppString* s)
+{
+    if (!s) return @"<null>";
+    return [NSString stringWithCharacters:(const unichar*)s->chars length:s->length];
+}
+
+static NSString* DumpVec3(const Vector3& v)
+{
+    return [NSString stringWithFormat:@"(%.4f, %.4f, %.4f)", v.x, v.y, v.z];
+}
+
+static NSString* DumpQuat(const Quaternion& q)
+{
+    return [NSString stringWithFormat:@"(%.4f, %.4f, %.4f, %.4f)", q.x, q.y, q.z, q.w];
+}
+
+static NSString* DumpStringArray(Il2CppArray* arr)
+{
+    if (!arr) return @"<null>";
+
+    NSMutableString* out = [NSMutableString stringWithString:@"["];
+    auto data = (Il2CppString**)arr->vector;
+
+    for (uintptr_t i = 0; i < arr->max_length; i++)
+    {
+        [out appendFormat:@"%@", NSStr(data[i])];
+        if (i + 1 < arr->max_length)
+            [out appendString:@", "];
+    }
+
+    [out appendString:@"]"];
+    return out;
+}
+
+typedef void(*orig_RpcCreateItem_t)(
+    Il2CppObject* self,
+    Il2CppString* a1,
+    Il2CppString* a2,
+    uintptr_t a3,
+    Il2CppString* a4,
+    Vector3 a5,
+    Quaternion a6,
+    Vector3 a7,
+    Vector3 a8,
+    Il2CppArray* a9,
+    uint8_t a10,
+    uint8_t a11,
+    uint64_t info0,
+    uint64_t info1,
+    uint64_t info2,
+    uint64_t info3
+);
+
+orig_RpcCreateItem_t orig_RpcCreateItem = nullptr;
+
+void my_RpcCreateItem(
+    Il2CppObject* self,
+    Il2CppString* a1,
+    Il2CppString* a2,
+    uintptr_t a3,
+    Il2CppString* a4,
+    Vector3 a5,
+    Quaternion a6,
+    Vector3 a7,
+    Vector3 a8,
+    Il2CppArray* a9,
+    uint8_t a10,
+    uint8_t a11,
+    uint64_t info0,
+    uint64_t info1,
+    uint64_t info2,
+    uint64_t info3
+)
+{
+    NSLog(@"[Kitty] RpcCreateItem called");
+    NSLog(@"[Kitty] self: %p", self);
+    NSLog(@"[Kitty] arg1 string: %@", NSStr(a1));
+    NSLog(@"[Kitty] arg2 string: %@", NSStr(a2));
+    NSLog(@"[Kitty] arg3 raw: 0x%llX", (unsigned long long)a3);
+    NSLog(@"[Kitty] arg4 string: %@", NSStr(a4));
+    NSLog(@"[Kitty] arg5 Vector3: %@", DumpVec3(a5));
+    NSLog(@"[Kitty] arg6 Quaternion: %@", DumpQuat(a6));
+    NSLog(@"[Kitty] arg7 Vector3: %@", DumpVec3(a7));
+    NSLog(@"[Kitty] arg8 Vector3: %@", DumpVec3(a8));
+    NSLog(@"[Kitty] arg9 string[]: %@", DumpStringArray(a9));
+    NSLog(@"[Kitty] arg10 byte: %u", (unsigned)a10);
+    NSLog(@"[Kitty] arg11 byte: %u", (unsigned)a11);
+    NSLog(@"[Kitty] PhotonMessageInfo raw: %016llX %016llX %016llX %016llX",
+          (unsigned long long)info0,
+          (unsigned long long)info1,
+          (unsigned long long)info2,
+          (unsigned long long)info3);
+
+    orig_RpcCreateItem(
+        self,
+        a1,
+        a2,
+        a3,
+        a4,
+        a5,
+        a6,
+        a7,
+        a8,
+        a9,
+        a10,
+        a11,
+        info0,
+        info1,
+        info2,
+        info3
+    );
+}
+
 static void InitHooks()
 {
-    //auto m_LateUpdate = s_get_method_from_name(PhotonHandler, "LateUpdate", 0);
-    //orig_Update = (orig_Update_t)m_LateUpdate->methodPointer;
-    //m_LateUpdate->methodPointer = (Il2CppMethodPointer)my_Update;
+    auto m_RpcCreateItem = s_get_method_from_name(NetworkMessenger, "RpcCreateItem", 12);
+    if (!m_RpcCreateItem)
+    {
+        NSLog(@"[Kitty] RpcCreateItem method not found");
+        return;
+    }
+
+    orig_RpcCreateItem = (orig_RpcCreateItem_t)m_RpcCreateItem->methodPointer;
+    m_RpcCreateItem->methodPointer = (Il2CppMethodPointer)my_RpcCreateItem;
+
+    NSLog(@"[Kitty] Hooked RpcCreateItem at %p", m_RpcCreateItem->methodPointer);
 }
 
 static void CustomTick()
