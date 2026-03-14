@@ -965,7 +965,7 @@ static void FindAllNetworkMessengers()
     KITTY_LOGI("[Kitty] found %{public}d NetworkMessengers", (int)arr->max_length);
  
     // Get the PhotonView field info (at offset 0x20 based on PhotonView being a MonoBehaviour field)
-    FieldInfo* f_pv = s_class_get_field_from_name(NetworkMessenger, "][[][]]][[]]][[][]][][][[][[[]][]][[[[][]]][]]]");
+    FieldInfo* f_pv = s_class_get_field_from_name(NetworkMessenger, "[[][[[[][][[[[[][[[[]][]]]]][[[[[[]]][][][][[]]");
     if (!f_pv)
     {
         KITTY_LOGI("[Kitty] PhotonView field not found");
