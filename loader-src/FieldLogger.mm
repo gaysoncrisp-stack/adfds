@@ -751,11 +751,14 @@ static NSString* DumpStringArray(Il2CppArray* arr)
     if (!arr) return @"<null>";
 
     NSMutableString* out = [NSMutableString stringWithString:@"["];
-    auto data = (Il2CppString**)arr->vector;
+
+    auto data = (Il2CppString**)((uint8_t*)arr + sizeof(Il2CppArray));
 
     for (uintptr_t i = 0; i < arr->max_length; i++)
     {
-        [out appendFormat:@"%@", NSStr(data[i])];
+        NSString* s = NSStr(data[i]);
+        [out appendString:s ? s : @"<null>"];
+
         if (i + 1 < arr->max_length)
             [out appendString:@", "];
     }
