@@ -799,11 +799,257 @@ static std::string DumpStringArrayCpp(Il2CppArray* arr)
     out += "]";
     return out;
 }
+
+
+
+
+static const char* kNetworkMessengerPhotonViewField = "[[][[[[][][[[[[][[[[]][]]]]][[[[[[]]][][][][[]]";
+
+static MethodInfo* g_cachedPhotonViewRpcMethod = nullptr;
+static FieldInfo*  g_cachedNetworkMessengerPhotonViewField = nullptr;
+static Il2CppClass* g_cachedRpcCreateItemAnchorEnumClass = nullptr;
+
+static thread_local bool g_isReplayingRpcCreateItem = false;
+static std::atomic<uint64_t> g_lastReplayHash{0};
+static std::atomic<uint64_t> g_lastReplayMs{0};
+
+static uint64_t NowMs()
+{
+    return (uint64_t)(CACurrentMediaTime() * 1000.0);
+}
+static const char* AnchorName(int v)
+{
+    switch (v)
+    {
+        case 0: return "None";
+        case 1: return "World";
+        case 2: return "Body";
+        case 3: return "Head";
+        case 4: return "HeadTop";
+        case 5: return "HandRight";
+        case 6: return "HandLeft";
+        case 7: return "UpperArmRight";
+        case 8: return "UpperArmLeft";
+        case 9: return "LowerArmRight";
+        case 10: return "LowerArmLeft";
+        case 11: return "WristRight";
+        case 12: return "WristLeft";
+        case 13: return "Item";
+        case 14: return "Mob";
+        case 15: return "Plush";
+        case 16: return "PlushPad";
+        default: return "Unknown";
+    }
+}
+static bool IsKnownItemId(const std::string& s)
+{
+    return std::find(itemIDs.begin(), itemIDs.end(), s) != itemIDs.end();
+}
+static uint64_t BuildRpcCreateItemHash(
+    Il2CppString* a1,
+    Il2CppString* a2,
+    int32_t a3,
+    Il2CppString* a4,
+    const Vector3& a5,
+    const Quaternion& a6,
+    const Vector3& a7,
+    const Vector3& a8,
+    Il2CppArray* a9,
+    uint8_t a10,
+    uint8_t a11,
+    Il2CppString* a12
+)
+{
+    std::string s;
+    s.reserve(512);
+
+    s += ToStdString(a1); s += "|";
+    s += ToStdString(a2); s += "|";
+    s += std::to_string(a3); s += "|";
+    s += ToStdString(a4); s += "|";
+    s += Vec3Str(a5); s += "|";
+    s += QuatStr(a6); s += "|";
+    s += Vec3Str(a7); s += "|";
+    s += Vec3Str(a8); s += "|";
+    s += DumpStringArrayCpp(a9); s += "|";
+    s += std::to_string((int)a10); s += "|";
+    s += std::to_string((int)a11); s += "|";
+    s += ToStdString(a12);
+
+    return (uint64_t)std::hash<std::string>{}(s);
+}
+static bool EnsureRpcReplayCache()
+{
+    if (!g_cachedPhotonViewRpcMethod)
+        g_cachedPhotonViewRpcMethod = FindPhotonViewRpcTargetOverload();
+
+    if (!g_cachedNetworkMessengerPhotonViewField && NetworkMessenger)
+        g_cachedNetworkMessengerPhotonViewField = s_class_get_field_from_name(NetworkMessenger, kNetworkMessengerPhotonViewField);
+
+    if (!g_cachedRpcCreateItemAnchorEnumClass)
+    {
+        MethodInfo* m = FindNetworkMessengerRpcCreateItem();
+        if (m && s_class_from_type)
+        {
+            const Il2CppType* t = GetMethodParamType(m, 2);
+            if (t)
+                g_cachedRpcCreateItemAnchorEnumClass = s_class_from_type(t);
+        }
+    }
+
+    return g_cachedPhotonViewRpcMethod &&
+           g_cachedNetworkMessengerPhotonViewField &&
+           g_cachedRpcCreateItemAnchorEnumClass;
+}
+static void DumpRpcCreateItemBetter(
+    Il2CppObject* self,
+    Il2CppString* a1,
+    Il2CppString* a2,
+    int32_t a3,
+    Il2CppString* a4,
+    const Vector3& a5,
+    const Quaternion& a6,
+    const Vector3& a7,
+    const Vector3& a8,
+    Il2CppArray* a9,
+    uint8_t a10,
+    uint8_t a11,
+    Il2CppString* a12,
+    uint64_t info0,
+    uint64_t info1,
+    uint64_t info2,
+    uint64_t info3
+)
+{
+    std::string s1 = ToStdString(a1);
+    std::string s2 = ToStdString(a2);
+    std::string s4 = ToStdString(a4);
+    std::string s12 = ToStdString(a12);
+    std::string v5 = Vec3Str(a5);
+    std::string q6 = QuatStr(a6);
+    std::string v7 = Vec3Str(a7);
+    std::string v8 = Vec3Str(a8);
+    std::string arr9 = DumpStringArrayCpp(a9);
+
+    KITTY_LOGI("[Kitty] ================= RpcCreateItem =================");
+    KITTY_LOGI("[Kitty] self => %{public}p", self);
+    KITTY_LOGI("[Kitty] arg1 key        => \"%{public}s\" (len=%{public}d)", s1.c_str(), (int)s1.size());
+    KITTY_LOGI("[Kitty] arg2 itemId     => \"%{public}s\" | known=%{public}s", s2.c_str(), IsKnownItemId(s2) ? "yes" : "no");
+    KITTY_LOGI("[Kitty] arg3 anchor     => %{public}d (%{public}s)", a3, AnchorName(a3));
+    KITTY_LOGI("[Kitty] arg4 extra      => \"%{public}s\" (len=%{public}d)", s4.c_str(), (int)s4.size());
+    KITTY_LOGI("[Kitty] arg5 pos        => %{public}s", v5.c_str());
+    KITTY_LOGI("[Kitty] arg6 rot        => %{public}s", q6.c_str());
+    KITTY_LOGI("[Kitty] arg7 vecA       => %{public}s", v7.c_str());
+    KITTY_LOGI("[Kitty] arg8 vecB       => %{public}s", v8.c_str());
+    KITTY_LOGI("[Kitty] arg9 string[]   => %{public}s", arr9.c_str());
+    KITTY_LOGI("[Kitty] arg10 byteA     => %{public}u", (unsigned)a10);
+    KITTY_LOGI("[Kitty] arg11 byteB     => %{public}u", (unsigned)a11);
+    KITTY_LOGI("[Kitty] arg12 extra2    => \"%{public}s\" (len=%{public}d)", s12.c_str(), (int)s12.size());
+    KITTY_LOGI(
+        "[Kitty] PhotonMessageInfo raw => %{public}016llX %{public}016llX %{public}016llX %{public}016llX",
+        (unsigned long long)info0,
+        (unsigned long long)info1,
+        (unsigned long long)info2,
+        (unsigned long long)info3
+    );
+}
+static bool ReplayRpcCreateItemFromHook(
+    Il2CppObject* self,
+    Il2CppString* a1,
+    Il2CppString* a2,
+    int32_t a3,
+    Il2CppString* a4,
+    const Vector3& a5,
+    const Quaternion& a6,
+    const Vector3& a7,
+    const Vector3& a8,
+    Il2CppArray* a9,
+    uint8_t a10,
+    uint8_t a11,
+    Il2CppString* a12
+)
+{
+    if (!EnsureRpcReplayCache())
+    {
+        KITTY_LOGI("[Kitty] replay cache missing");
+        return false;
+    }
+
+    Il2CppObject* pv = nullptr;
+    s_field_get_value(self, g_cachedNetworkMessengerPhotonViewField, &pv);
+    if (!pv)
+    {
+        KITTY_LOGI("[Kitty] replay failed: PhotonView null");
+        return false;
+    }
+
+    Il2CppClass* vector3Class = classMap["UnityEngine"]["Vector3"];
+    Il2CppClass* quaternionClass = classMap["UnityEngine"]["Quaternion"];
+    Il2CppClass* byteClass = classMap["System"]["Byte"];
+    if (!vector3Class || !quaternionClass || !byteClass)
+    {
+        KITTY_LOGI("[Kitty] replay failed: missing classes");
+        return false;
+    }
+
+    Il2CppObject* boxedAnchor = BoxValue(g_cachedRpcCreateItemAnchorEnumClass, &a3);
+    Il2CppObject* boxedA5 = BoxValue(vector3Class, (void*)&a5);
+    Il2CppObject* boxedA6 = BoxValue(quaternionClass, (void*)&a6);
+    Il2CppObject* boxedA7 = BoxValue(vector3Class, (void*)&a7);
+    Il2CppObject* boxedA8 = BoxValue(vector3Class, (void*)&a8);
+    Il2CppObject* boxedA10 = BoxValue(byteClass, &a10);
+    Il2CppObject* boxedA11 = BoxValue(byteClass, &a11);
+
+    if (!boxedAnchor || !boxedA5 || !boxedA6 || !boxedA7 || !boxedA8 || !boxedA10 || !boxedA11)
+    {
+        KITTY_LOGI("[Kitty] replay failed: boxing failed");
+        return false;
+    }
+
+    Il2CppArray* paramsArray = NewObjectArray(12);
+    if (!paramsArray)
+    {
+        KITTY_LOGI("[Kitty] replay failed: params array alloc failed");
+        return false;
+    }
+
+    auto elements = (Il2CppObject**)((uint8_t*)paramsArray + sizeof(Il2CppArray));
+    elements[0]  = (Il2CppObject*)a1;
+    elements[1]  = (Il2CppObject*)a2;
+    elements[2]  = boxedAnchor;
+    elements[3]  = (Il2CppObject*)a4;
+    elements[4]  = boxedA5;
+    elements[5]  = boxedA6;
+    elements[6]  = boxedA7;
+    elements[7]  = boxedA8;
+    elements[8]  = (Il2CppObject*)a9;
+    elements[9]  = boxedA10;
+    elements[10] = boxedA11;
+    elements[11] = (Il2CppObject*)a12;
+
+    Il2CppString* rpcName = CreateMonoString("RpcCreateItem");
+    int rpcTarget = 0;
+    void* rpcArgs[3] = { rpcName, &rpcTarget, paramsArray };
+
+    Il2CppException* ex = nullptr;
+    s_runtime_invoke(g_cachedPhotonViewRpcMethod, pv, rpcArgs, &ex);
+
+    if (ex)
+    {
+        LogIl2CppExceptionDetailed("ReplayRpcCreateItemFromHook", ex);
+        return false;
+    }
+
+    KITTY_LOGI("[Kitty] replayed RpcCreateItem through PhotonView.RPC");
+    return true;
+}
+
+
 typedef void(*orig_RpcCreateItem_t)(
     Il2CppObject* self,
     Il2CppString* a1,
     Il2CppString* a2,
-    uintptr_t a3,
+    int32_t a3,
     Il2CppString* a4,
     Vector3 a5,
     Quaternion a6,
@@ -812,6 +1058,7 @@ typedef void(*orig_RpcCreateItem_t)(
     Il2CppArray* a9,
     uint8_t a10,
     uint8_t a11,
+    Il2CppString* a12,
     uint64_t info0,
     uint64_t info1,
     uint64_t info2,
@@ -824,7 +1071,7 @@ void my_RpcCreateItem(
     Il2CppObject* self,
     Il2CppString* a1,
     Il2CppString* a2,
-    uintptr_t a3,
+    int32_t a3,
     Il2CppString* a4,
     Vector3 a5,
     Quaternion a6,
@@ -833,37 +1080,31 @@ void my_RpcCreateItem(
     Il2CppArray* a9,
     uint8_t a10,
     uint8_t a11,
+    Il2CppString* a12,
     uint64_t info0,
     uint64_t info1,
     uint64_t info2,
     uint64_t info3
 )
 {
-    std::string v5 = Vec3Str(a5);
-    std::string q6 = QuatStr(a6);
-    std::string v7 = Vec3Str(a7);
-    std::string v8 = Vec3Str(a8);
-    std::string arr9 = DumpStringArrayCpp(a9);
-
-    KITTY_LOGI("[Kitty] RpcCreateItem called");
-    KITTY_LOGI("[Kitty] self => %{public}p", self);
-    KITTY_LOGI("[Kitty] arg1 => %{public}s", SafeIl2CppStr(a1));
-    KITTY_LOGI("[Kitty] arg2 => %{public}s", SafeIl2CppStr(a2));
-    KITTY_LOGI("[Kitty] arg3 => 0x%{public}llX", (unsigned long long)a3);
-    KITTY_LOGI("[Kitty] arg4 => %{public}s", SafeIl2CppStr(a4));
-    KITTY_LOGI("[Kitty] arg5 => %{public}s", v5.c_str());
-    KITTY_LOGI("[Kitty] arg6 => %{public}s", q6.c_str());
-    KITTY_LOGI("[Kitty] arg7 => %{public}s", v7.c_str());
-    KITTY_LOGI("[Kitty] arg8 => %{public}s", v8.c_str());
-    KITTY_LOGI("[Kitty] arg9 => %{public}s", arr9.c_str());
-    KITTY_LOGI("[Kitty] arg10 => %{public}u", (unsigned)a10);
-    KITTY_LOGI("[Kitty] arg11 => %{public}u", (unsigned)a11);
-    KITTY_LOGI(
-        "[Kitty] PhotonMessageInfo raw => %{public}016llX %{public}016llX %{public}016llX %{public}016llX",
-        (unsigned long long)info0,
-        (unsigned long long)info1,
-        (unsigned long long)info2,
-        (unsigned long long)info3
+    DumpRpcCreateItemBetter(
+        self,
+        a1,
+        a2,
+        a3,
+        a4,
+        a5,
+        a6,
+        a7,
+        a8,
+        a9,
+        a10,
+        a11,
+        a12,
+        info0,
+        info1,
+        info2,
+        info3
     );
 
     orig_RpcCreateItem(
@@ -879,31 +1120,93 @@ void my_RpcCreateItem(
         a9,
         a10,
         a11,
+        a12,
         info0,
         info1,
         info2,
         info3
     );
-}
-static void InitHooks()
-{
-    if(!NetworkMessenger)
+
+    uint64_t hash = BuildRpcCreateItemHash(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
+    uint64_t nowMs = NowMs();
+    uint64_t lastHash = g_lastReplayHash.load();
+    uint64_t lastMs = g_lastReplayMs.load();
+
+    bool suppressReplay = false;
+
+    if (g_isReplayingRpcCreateItem)
+        suppressReplay = true;
+
+    if (!suppressReplay && lastHash == hash && (nowMs - lastMs) < 1000)
+        suppressReplay = true;
+
+    if (suppressReplay)
     {
-         NSLog(@"[Kitty] NetworkMessenger not found");
+        KITTY_LOGI("[Kitty] replay skipped to avoid recursion/echo");
         return;
     }
+
+    g_isReplayingRpcCreateItem = true;
+    bool replayOk = ReplayRpcCreateItemFromHook(
+        self,
+        a1,
+        a2,
+        a3,
+        a4,
+        a5,
+        a6,
+        a7,
+        a8,
+        a9,
+        a10,
+        a11,
+        a12
+    );
+    g_isReplayingRpcCreateItem = false;
+
+    if (replayOk)
+    {
+        g_lastReplayHash.store(hash);
+        g_lastReplayMs.store(nowMs);
+    }
+}
+
+static void InitHooks()
+{
+    if (!NetworkMessenger)
+    {
+        NSLog(@"[Kitty] NetworkMessenger not found");
+        return;
+    }
+
     auto m_RpcCreateItem = s_get_method_from_name(NetworkMessenger, "RpcCreateItem", 13);
-    if (!m_RpcCreateItem)
+    if (!m_RpcCreateItem || !m_RpcCreateItem->methodPointer)
     {
         NSLog(@"[Kitty] RpcCreateItem method not found");
         return;
     }
 
+    g_cachedPhotonViewRpcMethod = FindPhotonViewRpcTargetOverload();
+    g_cachedNetworkMessengerPhotonViewField = s_class_get_field_from_name(NetworkMessenger, kNetworkMessengerPhotonViewField);
+
+    MethodInfo* rpcCreateItemSig = FindNetworkMessengerRpcCreateItem();
+    if (rpcCreateItemSig && s_class_from_type)
+    {
+        const Il2CppType* arg2Type = GetMethodParamType(rpcCreateItemSig, 2);
+        if (arg2Type)
+            g_cachedRpcCreateItemAnchorEnumClass = s_class_from_type(arg2Type);
+    }
+
     orig_RpcCreateItem = (orig_RpcCreateItem_t)m_RpcCreateItem->methodPointer;
     m_RpcCreateItem->methodPointer = (Il2CppMethodPointer)my_RpcCreateItem;
 
-    NSLog(@"[Kitty] Hooked RpcCreateItem at %p", m_RpcCreateItem->methodPointer);
+    NSLog(@"[Kitty] Hooked RpcCreateItem orig=%p hook=%p", (void*)orig_RpcCreateItem, (void*)my_RpcCreateItem);
+    NSLog(@"[Kitty] cached PhotonView.RPC=%p field=%p anchorEnum=%p",
+          g_cachedPhotonViewRpcMethod,
+          g_cachedNetworkMessengerPhotonViewField,
+          g_cachedRpcCreateItemAnchorEnumClass);
 }
+
 
 
 
