@@ -1060,23 +1060,13 @@ static void FindAllNetworkMessengers()
         Il2CppArray* paramsArray = nullptr;
         const int paramCount = 11;
         
-        if (s_array_new)
+        if (!s_array_new)
         {
-            paramsArray = s_array_new(ObjectClass, paramCount);
-        }
-        else
-        {
-            // Fallback to manual allocation if s_array_new is not available
-            size_t arraySize = sizeof(Il2CppArray) + (sizeof(Il2CppObject*) * paramCount);
-            paramsArray = (Il2CppArray*)malloc(arraySize);
-            if (paramsArray)
-            {
-                memset(paramsArray, 0, arraySize);
-                paramsArray->max_length = paramCount;
-                paramsArray->klass = ObjectClass;
-            }
+            KITTY_LOGI("[Kitty] s_array_new not available, skipping");
+            continue;
         }
         
+        paramsArray = s_array_new(ObjectClass, paramCount);
         if (!paramsArray)
         {
             KITTY_LOGI("[Kitty] Failed to allocate params array");
@@ -1113,12 +1103,6 @@ static void FindAllNetworkMessengers()
         else
         {
             KITTY_LOGI("[Kitty] RPC called successfully on NetworkMessenger[%{public}d]", i);
-        }
-        
-        // Clean up only if manually allocated
-        if (!s_array_new)
-        {
-            free(paramsArray);
         }
     }
 }
@@ -1200,7 +1184,6 @@ void initStuff(MemoryFileInfo framework)
     s_value_box                 = (t_value_box)KittyScanner::findSymbol(framework, "_il2cpp_value_box");
     s_get_class_from_name = (decltype(s_get_class_from_name))KittyScanner::findSymbol(framework, "_il2cpp_class_from_name");
     s_array_new = (Il2CppArray*(*)(Il2CppClass*, il2cpp_array_size_t))KittyScanner::findSymbol(framework, "_il2cpp_array_new");
-
 
     if (!domain_get || !get_assemblies || !get_image || !get_class_count || !get_class || !thread_attach ||
         !s_get_method_from_name || !string_length || !string_chars || !s_runtime_invoke)
