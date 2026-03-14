@@ -1277,7 +1277,8 @@ static Il2CppArray* FindObjectsOfType(Il2CppClass* klass)
     return (Il2CppArray*)ret;
 }
 
-static Il2CppClass* (*s_class_get_parent2)(Il2CppClass*) = nullptr;
+
+
 
 static void LogIl2CppExceptionDetailed(const char* where, Il2CppException* ex)
 {
