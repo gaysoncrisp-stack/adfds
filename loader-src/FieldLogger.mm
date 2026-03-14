@@ -803,10 +803,28 @@ static std::string DumpStringArrayCpp(Il2CppArray* arr)
 
 
 
+static std::string GetTypeNameSafe(const Il2CppType* t);
+static const Il2CppType* GetMethodParamType(const MethodInfo* m, uint8_t index);
+static MethodInfo* FindPhotonViewRpcTargetOverload();
+static MethodInfo* FindNetworkMessengerRpcCreateItem();
+static Il2CppObject* BoxValue(Il2CppClass* klass, void* valuePtr);
+static Il2CppArray* NewObjectArray(il2cpp_array_size_t len);
+static Il2CppArray* NewStringArray(il2cpp_array_size_t len);
+static void DumpParamsArray(Il2CppArray* arr);
+static void LogIl2CppExceptionDetailed(const char* where, Il2CppException* ex);
+
+static Il2CppArray* (*s_array_new)(Il2CppClass*, il2cpp_array_size_t) = nullptr;
+static FieldInfo* (*s_class_get_fields)(Il2CppClass*, void**) = nullptr;
+static const char* (*s_field_get_name2)(FieldInfo*) = nullptr;
+static const Il2CppType* (*s_field_get_type2)(FieldInfo*) = nullptr;
+static int32_t (*s_field_get_offset2)(FieldInfo*) = nullptr;
+static Il2CppClass* (*s_class_from_type)(const Il2CppType*) = nullptr;
+static Il2CppClass* (*s_class_get_parent2)(Il2CppClass*) = nullptr;
+
 static const char* kNetworkMessengerPhotonViewField = "[[][[[[][][[[[[][[[[]][]]]]][[[[[[]]][][][][[]]";
 
 static MethodInfo* g_cachedPhotonViewRpcMethod = nullptr;
-static FieldInfo*  g_cachedNetworkMessengerPhotonViewField = nullptr;
+static FieldInfo* g_cachedNetworkMessengerPhotonViewField = nullptr;
 static Il2CppClass* g_cachedRpcCreateItemAnchorEnumClass = nullptr;
 
 static thread_local bool g_isReplayingRpcCreateItem = false;
@@ -817,6 +835,7 @@ static uint64_t NowMs()
 {
     return (uint64_t)(CACurrentMediaTime() * 1000.0);
 }
+
 static const char* AnchorName(int v)
 {
     switch (v)
@@ -841,10 +860,12 @@ static const char* AnchorName(int v)
         default: return "Unknown";
     }
 }
+
 static bool IsKnownItemId(const std::string& s)
 {
     return std::find(itemIDs.begin(), itemIDs.end(), s) != itemIDs.end();
 }
+
 static uint64_t BuildRpcCreateItemHash(
     Il2CppString* a1,
     Il2CppString* a2,
@@ -878,6 +899,7 @@ static uint64_t BuildRpcCreateItemHash(
 
     return (uint64_t)std::hash<std::string>{}(s);
 }
+
 static bool EnsureRpcReplayCache()
 {
     if (!g_cachedPhotonViewRpcMethod)
@@ -901,6 +923,7 @@ static bool EnsureRpcReplayCache()
            g_cachedNetworkMessengerPhotonViewField &&
            g_cachedRpcCreateItemAnchorEnumClass;
 }
+
 static void DumpRpcCreateItemBetter(
     Il2CppObject* self,
     Il2CppString* a1,
@@ -953,6 +976,7 @@ static void DumpRpcCreateItemBetter(
         (unsigned long long)info3
     );
 }
+
 static bool ReplayRpcCreateItemFromHook(
     Il2CppObject* self,
     Il2CppString* a1,
@@ -1043,7 +1067,6 @@ static bool ReplayRpcCreateItemFromHook(
     KITTY_LOGI("[Kitty] replayed RpcCreateItem through PhotonView.RPC");
     return true;
 }
-
 
 typedef void(*orig_RpcCreateItem_t)(
     Il2CppObject* self,
@@ -1207,10 +1230,6 @@ static void InitHooks()
           g_cachedRpcCreateItemAnchorEnumClass);
 }
 
-
-
-
-
 static Il2CppClass* UnityObject = nullptr;
 static MethodInfo* m_Object_FindObjectsOfType = nullptr;
 
@@ -1258,23 +1277,6 @@ static Il2CppArray* FindObjectsOfType(Il2CppClass* klass)
     return (Il2CppArray*)ret;
 }
 
-static std::string GetTypeNameSafe(const Il2CppType* t);
-static const Il2CppType* GetMethodParamType(const MethodInfo* m, uint8_t index);
-static MethodInfo* FindPhotonViewRpcTargetOverload();
-static MethodInfo* FindNetworkMessengerRpcCreateItem();
-
-static Il2CppObject* BoxValue(Il2CppClass* klass, void* valuePtr);
-static Il2CppArray* NewObjectArray(il2cpp_array_size_t len);
-static Il2CppArray* NewStringArray(il2cpp_array_size_t len);
-static void DumpParamsArray(Il2CppArray* arr);
-
-
-static Il2CppArray* (*s_array_new)(Il2CppClass*, il2cpp_array_size_t) = nullptr;
-static FieldInfo* (*s_class_get_fields)(Il2CppClass*, void**) = nullptr;
-static const char* (*s_field_get_name2)(FieldInfo*) = nullptr;
-static const Il2CppType* (*s_field_get_type2)(FieldInfo*) = nullptr;
-static int32_t (*s_field_get_offset2)(FieldInfo*) = nullptr;
-static Il2CppClass* (*s_class_from_type)(const Il2CppType*) = nullptr;
 static Il2CppClass* (*s_class_get_parent2)(Il2CppClass*) = nullptr;
 
 static void LogIl2CppExceptionDetailed(const char* where, Il2CppException* ex)
