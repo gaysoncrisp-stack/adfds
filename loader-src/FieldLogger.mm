@@ -729,23 +729,19 @@ void my_Update(Il2CppObject* self)
 
     orig_Update(self);
 }
-
 static NSString* NSStr(Il2CppString* s)
 {
     if (!s) return @"<null>";
     return [NSString stringWithCharacters:(const unichar*)s->chars length:s->length];
 }
-
 static NSString* DumpVec3(const Vector3& v)
 {
     return [NSString stringWithFormat:@"(%.4f, %.4f, %.4f)", v.x, v.y, v.z];
 }
-
 static NSString* DumpQuat(const Quaternion& q)
 {
     return [NSString stringWithFormat:@"(%.4f, %.4f, %.4f, %.4f)", q.x, q.y, q.z, q.w];
 }
-
 static NSString* DumpStringArray(Il2CppArray* arr)
 {
     if (!arr) return @"<null>";
@@ -770,26 +766,22 @@ static const char* SafeUtf8(NSString* s)
 {
     return s ? [s UTF8String] : "<null>";
 }
-
 static const char* SafeIl2CppStr(Il2CppString* s)
 {
     return SafeUtf8(NSStr(s));
 }
-
 static std::string Vec3Str(const Vector3& v)
 {
     char buf[128];
     snprintf(buf, sizeof(buf), "(%.4f, %.4f, %.4f)", v.x, v.y, v.z);
     return std::string(buf);
 }
-
 static std::string QuatStr(const Quaternion& q)
 {
     char buf[160];
     snprintf(buf, sizeof(buf), "(%.4f, %.4f, %.4f, %.4f)", q.x, q.y, q.z, q.w);
     return std::string(buf);
 }
-
 static std::string DumpStringArrayCpp(Il2CppArray* arr)
 {
     if (!arr) return "<null>";
@@ -893,7 +885,6 @@ void my_RpcCreateItem(
         info3
     );
 }
-
 static void InitHooks()
 {
     if(!NetworkMessenger)
@@ -914,6 +905,71 @@ static void InitHooks()
     NSLog(@"[Kitty] Hooked RpcCreateItem at %p", m_RpcCreateItem->methodPointer);
 }
 
+static Il2CppClass* UnityObject = nullptr;
+static MethodInfo* m_Object_FindObjectsOfType = nullptr;
+
+static Il2CppArray* FindObjectsOfType(Il2CppClass* klass)
+{
+    if (!klass)
+    {
+        KITTY_LOGI("[Kitty] FindObjectsOfType: klass null");
+        return nullptr;
+    }
+
+    if (!UnityObject)
+    {
+        KITTY_LOGI("[Kitty] FindObjectsOfType: UnityObject class null");
+        return nullptr;
+    }
+
+    if (!m_Object_FindObjectsOfType)
+    {
+        m_Object_FindObjectsOfType = s_get_method_from_name(UnityObject, "FindObjectsOfType", 1);
+        if (!m_Object_FindObjectsOfType || !m_Object_FindObjectsOfType->methodPointer)
+        {
+            KITTY_LOGI("[Kitty] FindObjectsOfType(Type) not found");
+            return nullptr;
+        }
+    }
+
+    Il2CppObject* typeObj = TypeOf(klass);
+    if (!typeObj)
+    {
+        KITTY_LOGI("[Kitty] FindObjectsOfType: TypeOf failed");
+        return nullptr;
+    }
+
+    void* args[1] = { typeObj };
+    Il2CppException* ex = nullptr;
+    Il2CppObject* ret = s_runtime_invoke(m_Object_FindObjectsOfType, nullptr, args, &ex);
+
+    if (ex || !ret)
+    {
+        KITTY_LOGI("[Kitty] FindObjectsOfType invoke failed ex=%{public}p ret=%{public}p", ex, ret);
+        return nullptr;
+    }
+
+    return (Il2CppArray*)ret;
+}
+
+static void FindAllNetworkMessengers()
+{
+    Il2CppArray* arr = FindObjectsOfType(NetworkMessenger);
+    if (!arr)
+    {
+        KITTY_LOGI("[Kitty] no NetworkMessenger array returned");
+        return;
+    }
+
+    KITTY_LOGI("[Kitty] found %{public}d NetworkMessengers", (int)arr->max_length);
+
+    auto data = (Il2CppObject**)((uint8_t*)arr + sizeof(Il2CppArray));
+    for (int i = 0; i < (int)arr->max_length; i++)
+    {
+        KITTY_LOGI("[Kitty] NetworkMessenger[%{public}d] => %{public}p", i, data[i]);
+    }
+}
+
 static void CustomTick()
 { 
     if (g_cfgDestroyAll.load())
@@ -923,7 +979,7 @@ static void CustomTick()
     }
     if (g_cfgDeleteAll.load())
     {
-       DeleteAll();
+        FindAllNetworkMessengers();
     }
 }
 
@@ -1048,10 +1104,11 @@ void initStuff(MemoryFileInfo framework)
 
     KITTY_LOGI("Initialized %d total namespaces with %d total classes", (int)classMap.size(), totalClasses);
 
-    GameObject           = classMap["UnityEngine"]["GameObject"];
-    Resources            = classMap["UnityEngine"]["Resources"];
-    Component            = classMap["UnityEngine"]["Component"];
-    Transform            = classMap["UnityEngine"]["Transform"];
+    UnityObject = classMap["UnityEngine"]["Object"];
+    GameObject  = classMap["UnityEngine"]["GameObject"];
+    Resources   = classMap["UnityEngine"]["Resources"];
+    Component   = classMap["UnityEngine"]["Component"];
+    Transform   = classMap["UnityEngine"]["Transform"];
     AuthenticationValues           = classMap["Photon.Realtime"]["AuthenticationValues"];
     PhotonNetwork           = classMap["Photon.Pun"]["PhotonNetwork"];
     PhotonView           = classMap["Photon.Pun"]["PhotonView"];
