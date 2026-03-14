@@ -905,6 +905,9 @@ static void InitHooks()
     NSLog(@"[Kitty] Hooked RpcCreateItem at %p", m_RpcCreateItem->methodPointer);
 }
 
+
+
+
 static Il2CppClass* UnityObject = nullptr;
 static MethodInfo* m_Object_FindObjectsOfType = nullptr;
 
@@ -991,14 +994,19 @@ static void LogIl2CppExceptionDetailed(const char* where, Il2CppException* ex)
     KITTY_LOGI("[Kitty] %s exception message => %{public}s", where, exMsg.empty() ? "<none>" : exMsg.c_str());
     KITTY_LOGI("[Kitty] %s exception tostring => %{public}s", where, exToStr.empty() ? "<none>" : exToStr.c_str());
 }
-
 static std::string GetTypeNameSafe(const Il2CppType* t)
 {
     if (!t || !s_type_get_name) return "<null>";
     const char* n = s_type_get_name(t);
     return n ? n : "<null>";
 }
-
+static const Il2CppType* GetMethodParamType(const MethodInfo* m, uint8_t index)
+{
+    if (!m) return nullptr;
+    if (index >= m->parameters_count) return nullptr;
+    if (!m->parameters) return nullptr;
+    return m->parameters[index];
+}
 static void DumpMethodSignature(const char* prefix, const MethodInfo* m)
 {
     if (!m)
@@ -1013,13 +1021,9 @@ static void DumpMethodSignature(const char* prefix, const MethodInfo* m)
     std::string sig = retType + " " + methodName + "(";
     for (uint8_t i = 0; i < m->parameters_count; i++)
     {
-        const ParameterInfo& p = m->parameters[i];
-        sig += GetTypeNameSafe(p.parameter_type);
-        if (p.name)
-        {
-            sig += " ";
-            sig += p.name;
-        }
+        const Il2CppType* pType = GetMethodParamType(m, i);
+        sig += GetTypeNameSafe(pType);
+
         if (i + 1 < m->parameters_count)
             sig += ", ";
     }
@@ -1027,7 +1031,6 @@ static void DumpMethodSignature(const char* prefix, const MethodInfo* m)
 
     KITTY_LOGI("[Kitty] %s %{public}s", prefix, sig.c_str());
 }
-
 static MethodInfo* FindPhotonViewRpcTargetOverload()
 {
     if (!PhotonView || !s_class_get_methods)
@@ -1043,9 +1046,9 @@ static MethodInfo* FindPhotonViewRpcTargetOverload()
         if (strcmp(m->name, "RPC") != 0) continue;
         if (m->parameters_count != 3) continue;
 
-        std::string p0 = GetTypeNameSafe(m->parameters[0].parameter_type);
-        std::string p1 = GetTypeNameSafe(m->parameters[1].parameter_type);
-        std::string p2 = GetTypeNameSafe(m->parameters[2].parameter_type);
+        std::string p0 = GetTypeNameSafe(GetMethodParamType(m, 0));
+        std::string p1 = GetTypeNameSafe(GetMethodParamType(m, 1));
+        std::string p2 = GetTypeNameSafe(GetMethodParamType(m, 2));
 
         KITTY_LOGI("[Kitty] PhotonView RPC candidate => %{public}s | %{public}s | %{public}s",
                    p0.c_str(), p1.c_str(), p2.c_str());
@@ -1061,7 +1064,6 @@ static MethodInfo* FindPhotonViewRpcTargetOverload()
 
     return found;
 }
-
 static MethodInfo* FindNetworkMessengerRpcCreateItem()
 {
     if (!NetworkMessenger || !s_class_get_methods)
@@ -1082,27 +1084,23 @@ static MethodInfo* FindNetworkMessengerRpcCreateItem()
 
     return found;
 }
-
 static Il2CppObject* BoxValue(Il2CppClass* klass, void* valuePtr)
 {
     if (!klass || !s_value_box) return nullptr;
     return s_value_box(klass, valuePtr);
 }
-
 static Il2CppArray* NewObjectArray(il2cpp_array_size_t len)
 {
     Il2CppClass* objectClass = classMap["System"]["Object"];
     if (!objectClass || !s_array_new) return nullptr;
     return s_array_new(objectClass, len);
 }
-
 static Il2CppArray* NewStringArray(il2cpp_array_size_t len)
 {
     Il2CppClass* stringClass = classMap["System"]["String"];
     if (!stringClass || !s_array_new) return nullptr;
     return s_array_new(stringClass, len);
 }
-
 static void DumpParamsArray(Il2CppArray* arr)
 {
     if (!arr)
@@ -1134,7 +1132,6 @@ static void DumpParamsArray(Il2CppArray* arr)
                    i, toStr.empty() ? "<none>" : toStr.c_str());
     }
 }
-
 static void FindAllNetworkMessengers()
 {
     Il2CppArray* arr = FindObjectsOfType(NetworkMessenger);
